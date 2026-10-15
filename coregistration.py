@@ -114,7 +114,7 @@ def download_hls_reference(ref, download_dir):
     band = HLS_PRODUCTS[ref['product']]
     links = [l for g in ref['granules'] for l in g.data_links()
              if l.endswith((f'.{band}.tif', '.Fmask.tif'))]
-    out = os.path.join(download_dir, 'hls_reference')
+    out = download_dir              # the scene's single downloads folder
     os.makedirs(out, exist_ok=True)
     have = [os.path.join(out, os.path.basename(l)) for l in links]
     if not all(os.path.exists(p) for p in have):
@@ -386,7 +386,7 @@ def coregister_scene(scene, acq_dt, download_dir, max_days=20, max_cloud=30.0, v
         nir, fmask = download_hls_reference(ref, download_dir)
         if not nir:
             return {'status': 'not applied: the HLS download failed'}
-        work = os.path.join(download_dir, 'hls_reference')
+        work = download_dir         # per scene, so these work files no longer collide
         enmap_tif = os.path.join(work, 'enmap_nir_for_coregistration.tif')
         band_nm = write_enmap_band(scene, enmap_tif)
         say(f'  AROSICS COREG_LOCAL: EnMAP {band_nm:.0f} nm against HLS {HLS_PRODUCTS[ref["product"]]} ...')

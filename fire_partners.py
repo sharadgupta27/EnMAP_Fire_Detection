@@ -568,8 +568,10 @@ def gather_fire_partners(bbox, when, sources=('FIRMS', 'GOES', 'SLSTR'), files=(
             note('FIRMS', f'not used: {exc}')
     if 'GOES' in sources:
         try:
+            # all sources share cache_dir (the scene's downloads folder); the product
+            # filenames already name the sensor, so no per-source subfolders
             d, paths = fetch_goes_fdc(bbox, when, window_minutes=geo_window_minutes,
-                                      cache_dir=os.path.join(cache_dir, 'goes_fdc'))
+                                      cache_dir=cache_dir)
             frames.append(d)
             note('GOES', f'{len(d)} fire pixels in {len(paths)} scans within +/-{geo_window_minutes:g} min'
                  if paths else 'no scan (outside the GOES disks or no data)')
@@ -578,14 +580,14 @@ def gather_fire_partners(bbox, when, sources=('FIRMS', 'GOES', 'SLSTR'), files=(
     if 'SLSTR' in sources:
         try:
             d, paths = fetch_slstr_frp(bbox, when, window_hours=window_hours,
-                                       cache_dir=os.path.join(cache_dir, 'slstr_frp'))
+                                       cache_dir=cache_dir)
             frames.append(d); note('SLSTR', f'{len(d)} detections in {len(paths)} products within +/-{window_hours:g} h')
         except Exception as exc:
             note('SLSTR', f'not used: {exc}')
     if 'LSASAF' in sources:
         try:
             d, paths = fetch_lsasaf_frp(bbox, when, window_minutes=geo_window_minutes,
-                                        cache_dir=os.path.join(cache_dir, 'lsasaf_frp'))
+                                        cache_dir=cache_dir)
             frames.append(d)
             note('LSASAF', f'{len(d)} SEVIRI detections in {len(paths)} slots within +/-{geo_window_minutes:g} min'
                  if paths else 'no slot in the window')

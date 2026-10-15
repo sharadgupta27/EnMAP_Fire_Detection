@@ -43,6 +43,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import Fire_analysis_with_EnMAP as pipeline
+import basemap
 import credentials
 
 APP_TITLE = 'EnMAP Wildfire Temperature'
@@ -381,7 +382,10 @@ def _capturing(q, fn):
 # ---------------------------------------------------------------- the window
 class EnMAPFireGUI(tk.Tk):
 
-    NO_COMPARE = '- none (single map) -'
+    NO_COMPARE = 'None (single map)'
+    BG_ENMAP = 'EnMAP scene composite'
+    BG_S2_AUTO = 'Sentinel-2 cloudless, pre-fire year'
+    BACKGROUNDS = [BG_S2_AUTO] + [f'Sentinel-2 cloudless {y}' for y in basemap.YEARS] + [BG_ENMAP]
 
     RASTER_FILETYPES = [
         ('EnMAP header / raster', '*.hdr *.tif *.tiff *.dat *.bsq *.bil *.bip'),
@@ -465,6 +469,12 @@ class EnMAPFireGUI(tk.Tk):
         self.compare_split = tk.DoubleVar(value=0.5)
         self._preview_methods = {}      # display label -> normalised per-pixel frame (methods that ran)
         self._compare_state = None      # cached RGBA images of the two compared methods
+        self.background = tk.StringVar(value=self.BG_S2_AUTO)
+        self._basemaps = {}             # year -> fetched mosaic for the current result
+        self._basemap_failed = {}       # year -> error text for the current result
+        self._basemap_pending = set()   # years being fetched
+        self._acq_dt = None             # acquisition time of the current result (auto year)
+        self._scene_dir = None          # results_dir/<scene> of the current result
 
         self._worker_thread = None
         self._queue = queue.Queue()
@@ -523,7 +533,24 @@ class EnMAPFireGUI(tk.Tk):
         st.configure('Card.TFrame', background=t['card'])
         st.configure('CardOuter.TFrame', background=t['card_line'])
         st.configure('Card.TLabel', background=t['card'], foreground=t['ink'])
-        st.configure('Card.Horizontal.TScale', background=t['card'])
+        # comparison slider: ember thumb on a flat trough (clam draws the thumb in 'background')
+        st.configure('Card.Horizontal.TScale', background=t['accent'], troughcolor=t['trough'],
+                     bordercolor=t['card'], lightcolor=t['accent'], darkcolor=t['accent'],
+                     troughrelief='flat', sliderlength=16, gripcount=0)
+        st.map('Card.Horizontal.TScale', background=[('disabled', t['field_line']), ('active', t['accent_hi'])],
+               lightcolor=[('disabled', t['field_line'])], darkcolor=[('disabled', t['field_line'])])
+        st.configure('Field.TLabel', background=t['card'], foreground=t['muted'], font=(FONT, 8, 'bold'))
+        # map tool row: quiet text buttons; the active pan/zoom mode is ember-tinted
+        st.configure('Tool.TButton', background=t['card'], foreground=t['muted'], bordercolor=t['card'],
+                     lightcolor=t['card'], darkcolor=t['card'], relief='flat', padding=(8, 3),
+                     focuscolor=t['card'], font=(FONT, 9), width=0)
+        st.map('Tool.TButton', background=[('disabled', t['card']), ('active', t['field'])],
+               foreground=[('disabled', t['field_line']), ('active', t['ink'])])
+        st.configure('ToolOn.TButton', background=t['accent_soft'], foreground=t['accent'],
+                     bordercolor=t['accent_soft'], lightcolor=t['accent_soft'], darkcolor=t['accent_soft'],
+                     relief='flat', padding=(8, 3), focuscolor=t['accent_soft'], font=(FONT, 9, 'bold'),
+                     width=0)
+        st.map('ToolOn.TButton', background=[('active', t['accent_soft'])])
         st.configure('CardTitle.TLabel', background=t['card'], foreground=t['ink'], font=(FONT, 11, 'bold'))
         st.configure('CardHint.TLabel', background=t['card'], foreground=t['muted'], font=(FONT, 9))
         st.configure('CardStrong.TLabel', background=t['card'], foreground=t['ink'], font=(FONT, 10, 'bold'))
@@ -1179,29 +1206,57 @@ class EnMAPFireGUI(tk.Tk):
         body.add(left, weight=3)
 
         right_outer = ttk.Frame(body, style='CardOuter.TFrame')
-        right = ttk.Frame(right_outer, style='Card.TFrame', padding=(12, 10))
+        right = ttk.Frame(right_outer, style='Card.TFrame', padding=(16, 12))
         right.pack(fill='both', expand=True, padx=1, pady=1)
         prev_head = ttk.Frame(right, style='Card.TFrame')
         prev_head.pack(fill='x')
-        ttk.Label(prev_head, text='Temperature map', style='CardTitle.TLabel').pack(side='left')
+        ttk.Label(prev_head, text='Temperature map', style='CardTitle.TLabel').pack(anchor='w')
+        ttk.Label(prev_head, text='Per-pixel fire temperature over the scene',
+                  style='CardHint.TLabel').pack(anchor='w', pady=(1, 0))
+        # Method pickers: two equal columns, field caption above each box.
         # The choices are the methods that actually ran (filled in _on_done), never a fixed list.
-        self.preview_combo = ttk.Combobox(prev_head, textvariable=self.preview_source, state='disabled',
-                                          width=26, values=[])
-        self.preview_combo.pack(side='right')
+        pickers = ttk.Frame(right, style='Card.TFrame')
+        pickers.pack(fill='x', pady=(10, 0))
+        pickers.columnconfigure(0, weight=1, uniform='pick')
+        pickers.columnconfigure(1, weight=1, uniform='pick')
+        ttk.Label(pickers, text='METHOD', style='Field.TLabel').grid(row=0, column=0, sticky='w')
+        ttk.Label(pickers, text='COMPARE WITH', style='Field.TLabel').grid(row=0, column=1, sticky='w',
+                                                                          padx=(10, 0))
+        self.preview_combo = ttk.Combobox(pickers, textvariable=self.preview_source, state='disabled',
+                                          width=18, values=[])
+        self.preview_combo.grid(row=1, column=0, sticky='ew', pady=(3, 0))
         self.preview_combo.bind('<<ComboboxSelected>>', lambda _e: self._render_selected_preview())
-        # Comparison slider: method A left of the divider, method B right of it, same pixel grid
-        # and colour scale; drag the slider to sweep the divider across the fire.
-        cmp_row = ttk.Frame(right, style='Card.TFrame')
-        cmp_row.pack(fill='x', pady=(6, 0))
-        ttk.Label(cmp_row, text='Compare with', style='Card.TLabel').pack(side='left')
-        self.compare_combo = ttk.Combobox(cmp_row, textvariable=self.compare_source, state='disabled',
-                                          width=26, values=[self.NO_COMPARE])
-        self.compare_combo.pack(side='left', padx=(8, 0))
+        self.compare_combo = ttk.Combobox(pickers, textvariable=self.compare_source, state='disabled',
+                                          width=18, values=[self.NO_COMPARE])
+        self.compare_combo.grid(row=1, column=1, sticky='ew', padx=(10, 0), pady=(3, 0))
         self.compare_combo.bind('<<ComboboxSelected>>', lambda _e: self._render_selected_preview())
+        ttk.Label(pickers, text='BACKGROUND', style='Field.TLabel').grid(row=2, column=0, sticky='w',
+                                                                        pady=(8, 0))
+        self.background_combo = ttk.Combobox(pickers, textvariable=self.background, state='readonly',
+                                             width=18, values=self.BACKGROUNDS)
+        self.background_combo.grid(row=3, column=0, columnspan=2, sticky='ew', pady=(3, 0))
+        self.background_combo.bind('<<ComboboxSelected>>', lambda _e: self._render_selected_preview())
+        # loading / year + licence / geolocation of the background, next to the picker
+        self._background_note = ttk.Label(pickers, text='', style='CardMuted.TLabel', justify='left')
+        self._background_note.grid(row=4, column=0, columnspan=2, sticky='w', pady=(3, 0))
+        pickers.bind('<Configure>', lambda e: self._background_note.configure(
+            wraplength=max(e.width - 4, 120)))
+        self._preview_pickers = pickers
+        # Comparison slider: method A left of the divider, method B right of it, same pixel grid
+        # and colour scale; drag the slider to sweep the divider across the fire. The row is
+        # shown only while two methods are being compared.
+        cmp_row = ttk.Frame(right, style='Card.TFrame')
+        self._compare_row = cmp_row
+        cmp_labels = ttk.Frame(cmp_row, style='Card.TFrame')
+        cmp_labels.pack(fill='x')
+        self._compare_a_label = ttk.Label(cmp_labels, text='', style='CardMuted.TLabel')
+        self._compare_a_label.pack(side='left')
+        self._compare_b_label = ttk.Label(cmp_labels, text='', style='CardMuted.TLabel')
+        self._compare_b_label.pack(side='right')
         self.compare_scale = ttk.Scale(cmp_row, from_=0.0, to=1.0, orient='horizontal',
                                        variable=self.compare_split, style='Card.Horizontal.TScale',
                                        command=lambda _v: self._update_compare_split())
-        self.compare_scale.pack(side='left', fill='x', expand=True, padx=(10, 0))
+        self.compare_scale.pack(fill='x', pady=(2, 0))
         # Map and colorbar get fixed axes. figure.colorbar(ax=...) steals room from
         # the map on every redraw and Colorbar.remove() does not give it back, so
         # each method switch used to shrink the map further.
@@ -1213,18 +1268,37 @@ class EnMAPFireGUI(tk.Tk):
         # The actions row and toolbar are packed (side='bottom') before the canvas:
         # the expanding canvas otherwise pushes them out of a short window.
         actions = ttk.Frame(right, style='Card.TFrame')
-        actions.pack(side='bottom', fill='x', pady=(8, 0))
+        actions.pack(side='bottom', fill='x', pady=(10, 0))
+        ttk.Separator(right, orient='horizontal').pack(side='bottom', fill='x', pady=(8, 0))
         self.canvas = FigureCanvasTkAgg(self.figure, master=right)
+        # matplotlib's toolbar keeps the view history and the pan/zoom modes, but it is
+        # never packed: its stock icons ignore the theme. A themed row drives it instead.
         tb = NavigationToolbar2Tk(self.canvas, right, pack_toolbar=False)
-        tb.pack(side='bottom', fill='x')
         self._toolbar = tb
-        self.canvas.get_tk_widget().pack(fill='both', expand=True, pady=(6, 0))
+        tools = ttk.Frame(right, style='Card.TFrame')
+        tools.pack(side='bottom', fill='x', pady=(4, 0))
+        self._map_tools = {}
+        for key, text, cmd in (('home', '⌂  Fit', tb.home), ('back', '←', tb.back),
+                               ('forward', '→', tb.forward),
+                               ('pan', '✥  Pan', lambda: self._map_mode('pan')),
+                               ('zoom', '⬚  Zoom', lambda: self._map_mode('zoom'))):
+            b = ttk.Button(tools, text=text, command=cmd, style='Tool.TButton', state='disabled',
+                           takefocus=False)
+            b.pack(side='left', padx=(0, 2))
+            self._map_tools[key] = b
+        # cursor read-out (lon/lat and value) from the hidden toolbar, on one line
+        self._map_coords = tk.StringVar(value='')
+        tb.message.trace_add('write', lambda *_: self._map_coords.set(
+            ' '.join(tb.message.get().split())))
+        ttk.Label(tools, textvariable=self._map_coords, style='CardMuted.TLabel',
+                  anchor='e').pack(side='right', fill='x', expand=True)
+        self.canvas.get_tk_widget().pack(fill='both', expand=True, pady=(8, 0))
         self._tkthemed(self.canvas.get_tk_widget(), background='plot_bg', highlightbackground='plot_bg')
         self.canvas.mpl_connect('scroll_event', self._on_map_scroll)
-        self.open_folder_btn = ttk.Button(actions, text='Open results folder', state='disabled',
+        self.open_folder_btn = ttk.Button(actions, text='Open folder', state='disabled',
                                           command=self._open_results_folder, style='Ghost.TButton')
         self.open_folder_btn.pack(side='left')
-        self.save_plot_btn = ttk.Button(actions, text='Save preview as PNG', state='disabled',
+        self.save_plot_btn = ttk.Button(actions, text='Save PNG', state='disabled',
                                         command=self._save_preview, style='Ghost.TButton')
         self.save_plot_btn.pack(side='left', padx=(8, 0))
         self.open_report_btn = ttk.Button(actions, text='Open PDF report', state='disabled',
@@ -1233,7 +1307,7 @@ class EnMAPFireGUI(tk.Tk):
         self._report_path = None
         body.add(right_outer, weight=2)
         self._refresh_preview_background()
-        self._show_preview_placeholder('Run the pipeline to see the temperature map here.')
+        self._show_preview_placeholder('Run the pipeline to see\nthe temperature map here.')
 
     # ------------------------------------------------------------ action bar
     def _build_action_bar(self, parent):
@@ -1555,6 +1629,8 @@ class EnMAPFireGUI(tk.Tk):
                     self._on_partners_found(payload)
                 elif kind == 'REPORT':
                     self._on_report_built(payload)
+                elif kind == 'BASEMAP':
+                    self._on_basemap(*payload)
         except queue.Empty:
             pass
         if self.winfo_exists():
@@ -1624,10 +1700,19 @@ class EnMAPFireGUI(tk.Tk):
         self.compare_combo.configure(state='disabled', values=[self.NO_COMPARE])
         self.compare_source.set(self.NO_COMPARE)
         self.compare_scale.state(['disabled'])
+        self._show_compare_row(False)
+        self._background_note.configure(text='')
+        self._scene_dir = None
 
     def _on_done(self, payload):
         results_df, scene, temp_map, figure_paths = payload
         self._last_result = payload
+        self._basemaps, self._basemap_failed, self._basemap_pending = {}, {}, set()
+        self._scene_dir = (getattr(results_df, 'attrs', {}) or {}).get('results_dir')
+        try:
+            self._acq_dt = pipeline._scene_acquisition_datetime(self.enmap_path.get())
+        except Exception:
+            self._acq_dt = None
         try:
             self._last_rgb_composite = pipeline._build_rgb_composite(scene)
         except Exception:
@@ -1798,18 +1883,12 @@ class EnMAPFireGUI(tk.Tk):
         self.cax.set_facecolor(bg)
         try:
             self.canvas.get_tk_widget().configure(bg=bg)
-            self._toolbar.configure(background=bg)
-            for child in self._toolbar.winfo_children():
-                try:
-                    child.configure(background=bg)
-                except tk.TclError:
-                    pass
         except Exception:
             pass
         if self._last_result is not None:
             self._render_selected_preview()
         else:
-            self._show_preview_placeholder('Run the pipeline to see the temperature map here.')
+            self._show_preview_placeholder('Run the pipeline to see\nthe temperature map here.')
 
     def _draw_colorbar(self, mappable, **kw):
         """Colorbar on the fixed self.cax, so the map axes never change size."""
@@ -1862,15 +1941,153 @@ class EnMAPFireGUI(tk.Tk):
             self._toolbar.update()
         except Exception:
             pass
+        self._set_map_tools(True)
 
-    def _show_preview_placeholder(self, text):
+    def _set_map_tools(self, enabled):
+        for b in self._map_tools.values():
+            b.state(['!disabled'] if enabled else ['disabled'])
+        if not enabled:
+            mode = getattr(self._toolbar.mode, 'name', 'NONE')
+            if mode in ('PAN', 'ZOOM'):
+                getattr(self._toolbar, mode.lower())()   # toggles the mode off
+            self._map_coords.set('')
+        self._paint_map_tools()
+
+    def _map_mode(self, mode):
+        """Pan / zoom-to-rectangle toggles of the (hidden) matplotlib toolbar."""
+        getattr(self._toolbar, mode)()
+        self._paint_map_tools()
+
+    def _paint_map_tools(self):
+        mode = getattr(self._toolbar.mode, 'name', 'NONE')
+        for key in ('pan', 'zoom'):
+            self._map_tools[key].configure(
+                style='ToolOn.TButton' if mode == key.upper() else 'Tool.TButton')
+
+    def _show_compare_row(self, show, label_a='', label_b=''):
+        if show:
+            self._compare_a_label.configure(text=f'◀  {label_a}')
+            self._compare_b_label.configure(text=f'{label_b}  ▶')
+            if not self._compare_row.winfo_manager():
+                self._compare_row.pack(fill='x', pady=(8, 0), after=self._preview_pickers)
+        elif self._compare_row.winfo_manager():
+            self._compare_row.pack_forget()
+
+    def _show_preview_placeholder(self, text, title='No map yet'):
+        """Empty state: a dashed drop-zone frame with a heading, the hint and
+        the inferno ramp the map will use, centred on the whole figure (the
+        map axes leave room for a colorbar and would sit off-centre)."""
+        from matplotlib.patches import FancyBboxPatch
+        from matplotlib.collections import LineCollection
+        from matplotlib.transforms import offset_copy
         self._clear_colorbar()
         self.ax.clear()
         self.ax.set_facecolor(self._panel_bg_color())
-        self.ax.text(0.5, 0.5, text, ha='center', va='center', wrap=True, color=self.t['muted'],
-                     fontsize=10)
+        fig_tr = self.figure.transFigure
+        self.ax.add_patch(FancyBboxPatch((0.04, 0.04), 0.92, 0.92, transform=fig_tr, clip_on=False,
+                                         boxstyle='round,pad=0,rounding_size=0.02', fill=False,
+                                         ec=self.t['field_line'], lw=1.2, ls=(0, (5, 4))))
+        # Vertical spacing in points, so the stack never overlaps on a short canvas.
+        n = 64
+        xs = np.linspace(0.38, 0.62, n + 1)
+        ramp = LineCollection([[(xs[i], 0.5), (xs[i + 1], 0.5)] for i in range(n)],
+                              colors=matplotlib.colormaps['inferno'](np.linspace(0, 1, n)),
+                              linewidths=5, capstyle='butt', clip_on=False,
+                              transform=offset_copy(fig_tr, fig=self.figure, y=30, units='points'))
+        self.ax.add_collection(ramp)
+        self.ax.annotate(title, (0.5, 0.5), xycoords='figure fraction', xytext=(0, 4),
+                         textcoords='offset points', ha='center', va='bottom',
+                         color=self.t['ink'], fontsize=12, fontweight='bold')
+        self.ax.annotate(text, (0.5, 0.5), xycoords='figure fraction', xytext=(0, -4),
+                         textcoords='offset points', ha='center', va='top',
+                         color=self.t['muted'], fontsize=9.5)
+        self.ax.set_xlim(0, 1)
+        self.ax.set_ylim(0, 1)
         self.ax.set_axis_off()
+        self._show_compare_row(False)
+        if hasattr(self, '_map_tools'):
+            self._set_map_tools(False)
         self.canvas.draw()
+
+    # ------------------------------------------------------------ basemap
+    def _basemap_year(self):
+        """Mosaic year the Background list asks for; None for the EnMAP composite."""
+        choice = self.background.get()
+        if choice == self.BG_ENMAP:
+            return None
+        if choice == self.BG_S2_AUTO:
+            return basemap.layer_for_acquisition(self._acq_dt)
+        return int(choice.rsplit(' ', 1)[-1])
+
+    def _current_basemap(self):
+        """The fetched mosaic for the chosen year, or None while it loads, if
+        it failed, or when the EnMAP composite is chosen. A missing mosaic is
+        fetched off the UI thread; the map is redrawn when it arrives (and
+        shows the EnMAP composite until then)."""
+        year = self._basemap_year()
+        scene = self._last_result[1] if self._last_result is not None else None
+        if year is None or scene is None or scene.get('lon') is None:
+            self._note_background()
+            return None
+        if year in self._basemaps:
+            self._note_background()
+            return self._basemaps[year]
+        if year not in self._basemap_failed and year not in self._basemap_pending:
+            self._basemap_pending.add(year)
+            token = id(self._last_result)
+            bounds = basemap.scene_bounds(scene['lon'], scene['lat'])
+            # kept with the scene's other downloads
+            cache = os.path.join(self._scene_dir, 'downloads') if self._scene_dir else None
+
+            def work():
+                try:
+                    self._queue.put(('BASEMAP', (token, year, basemap.fetch_basemap(bounds, year, cache))))
+                except Exception as exc:
+                    self._queue.put(('BASEMAP', (token, year, exc)))
+            threading.Thread(target=work, daemon=True).start()
+        self._note_background()
+        return None
+
+    def _on_basemap(self, token, year, result):
+        if self._last_result is None or token != id(self._last_result):
+            return                      # a mosaic for an earlier run
+        self._basemap_pending.discard(year)
+        if isinstance(result, Exception):
+            self._basemap_failed[year] = f'{result.__class__.__name__}: {result}'
+            self._log(f'\nSentinel-2 cloudless {year} basemap not available ({self._basemap_failed[year]}); '
+                      'the map shows the EnMAP composite.\n')
+        else:
+            self._basemaps[year] = result
+            self._log(f'\nBasemap: {result["attribution"]} (zoom {result["zoom"]}).\n')
+        if year == self._basemap_year():
+            self._render_selected_preview()
+
+    def _note_background(self):
+        """Status beside the Background list: loading, failed, or the mosaic's
+        licence and whether the fire pixels sit on co-registered positions."""
+        year = self._basemap_year()
+        scene = self._last_result[1] if self._last_result is not None else None
+        if year is None or scene is None:
+            text = ''
+        elif year in self._basemap_pending:
+            text = f'Loading the {year} mosaic…'
+        elif year in self._basemap_failed:
+            text = f'{year} mosaic unavailable (offline?); EnMAP composite shown'
+        else:
+            geo = ('positions co-registered (AROSICS)' if 'lat_nominal' in scene
+                   else 'nominal L1B positions, may be offset')
+            text = f'{year} mosaic, {basemap.licence(year)}; {geo}'
+        self._background_note.configure(text=text)
+
+    def _draw_attribution(self, bm):
+        """EOX credit on the map itself, so a saved PNG carries it. Short enough
+        for a narrow map; the full credit line is in the log and basemap.attribution()."""
+        y = bm['year']
+        self.ax.text(0.99, 0.01, f'Sentinel-2 cloudless {y} © EOX\n'
+                     f'modified Copernicus Sentinel data {y}',
+                     transform=self.ax.transAxes, ha='right', va='bottom', fontsize=5.5,
+                     color='#ffffff', zorder=5, linespacing=1.2,
+                     bbox=dict(boxstyle='square,pad=0.3', fc='#000000', ec='none', alpha=0.5))
 
     def _show_v1_tile(self, show):
         """The legacy-v1 tile exists only for runs that computed v1; its grid
@@ -1933,22 +2150,24 @@ class EnMAPFireGUI(tk.Tk):
             return
         if other in self._preview_methods and other != src:
             self.compare_scale.state(['!disabled'])
+            self._show_compare_row(True, src, other)
             self._render_compare(scene, src, other)
             return
         self.compare_scale.state(['disabled'])
+        self._show_compare_row(False)
         self._compare_state = None
         tmap = np.full(temp_map.shape, np.nan, dtype='float32')
         v = m['valid'].values
         tmap[m['ind_x'].values[v].astype(int), m['ind_y'].values[v].astype(int)] = m['T'].values[v]
-        self._render_preview(scene, tmap, f'{src}: {int(v.sum())} of {len(v)} pixels retrieved')
+        self._render_preview(scene, tmap, f'{src} · {int(v.sum())}/{len(v)} retrieved')
 
     def _compare_rgba(self, m, win, grey, norm):
         """RGBA image of one method on the window: grey scene, retrieved
         temperatures in the shared colour scale, detected pixels without a
         usable retrieval of THIS method in blue (as in the report maps)."""
         r0, r1, c0, c1 = win
-        img = np.repeat(grey[..., None], 3, axis=2)
-        img = np.concatenate([img, np.ones(grey.shape + (1,))], axis=2)
+        img = grey if grey.ndim == 3 else np.repeat(grey[..., None], 3, axis=2)   # basemap is RGB
+        img = np.concatenate([img, np.ones(img.shape[:2] + (1,))], axis=2)
         xi = m['ind_x'].values.astype(int) - r0
         yi = m['ind_y'].values.astype(int) - c0
         inside = (xi >= 0) & (xi < r1 - r0) & (yi >= 0) & (yi < c1 - c0)
@@ -1969,7 +2188,13 @@ class EnMAPFireGUI(tk.Tk):
         n_rows, n_cols = self._last_result[2].shape[:2]
         win = sr._window({label_a: a}, n_rows, n_cols)
         r0, r1, c0, c1 = win
-        if self._last_rgb_composite is not None:
+        bm = self._current_basemap()
+        scene_ll = self._last_result[1]
+        if bm is not None:
+            # the mosaic sampled at each 30 m pixel's lon/lat, so both halves share one grid
+            grey = basemap.sample(bm, scene_ll['lon'][r0:r1, c0:c1], scene_ll['lat'][r0:r1, c0:c1])
+            grey = np.where(np.isfinite(grey), grey, 0.85)
+        elif self._last_rgb_composite is not None:
             rgb = self._last_rgb_composite[r0:r1, c0:c1, :3].astype(float)
             grey = 0.15 + 0.6 * (0.299 * rgb[..., 0] + 0.587 * rgb[..., 1] + 0.114 * rgb[..., 2])
         else:
@@ -1993,13 +2218,16 @@ class EnMAPFireGUI(tk.Tk):
         self._draw_colorbar(sm, extend='both')
         n_out = int((~((a['ind_x'] >= r0) & (a['ind_x'] < r1) & (a['ind_y'] >= c0) & (a['ind_y'] < c1))).sum())
         va, vb = a['valid'].values, b['valid'].values
-        self.ax.set_title(f'◀ {label_a}: {int(va.sum())}/{len(va)}\n'
-                          f'{label_b}: {int(vb.sum())}/{len(vb)} ▶',
-                          color=self.t['ink'], fontsize=8)
+        # method names and retrieved/detected counts label the slider ends (a two-line
+        # axes title was clipped once the slider row took its height from the canvas)
+        self._show_compare_row(True, f'{label_a}  ({int(va.sum())}/{len(va)})',
+                               f'{label_b}  ({int(vb.sum())}/{len(vb)})')
         self.ax.text(0.5, -0.02, 'blue: detected, no usable retrieval'
                      + (f'\n{n_out} detections outside this window' if n_out else ''),
                      transform=self.ax.transAxes, ha='center', va='top', fontsize=7,
                      color=self.t['muted'])
+        if bm is not None:
+            self._draw_attribution(bm)
         self.ax.set_axis_off()
         self._finish_map()
         self._update_compare_split()
@@ -2027,7 +2255,18 @@ class EnMAPFireGUI(tk.Tk):
             ind_x, ind_y = np.where(finite)
             values = temp_map[ind_x, ind_y]
             lat, lon = scene['lat'], scene['lon']
-            if self._last_rgb_composite is not None:
+            bm = self._current_basemap()
+            if bm is not None:
+                # Sentinel-2 cloudless mosaic on its lon/lat grid, fire markers on top
+                self.ax.imshow(bm['img'], extent=bm['extent'], origin='upper', interpolation='bilinear',
+                               zorder=0)
+                pcm = pipeline._scatter_over_composite(
+                    self.ax, lon, lat, None, ind_x, ind_y, values,
+                    'inferno', float(values.min()), float(values.max()))
+                self.ax.set_aspect(1.0 / max(np.cos(np.radians(np.nanmean(lat))), 1e-3))
+                self._zoom_to_fire(ind_x, ind_y, temp_map.shape, lon, lat)
+                self._draw_attribution(bm)
+            elif self._last_rgb_composite is not None:
                 pcm = pipeline._scatter_over_composite(
                     self.ax, lon, lat, self._last_rgb_composite, ind_x, ind_y, values,
                     'inferno', float(values.min()), float(values.max()))
@@ -2039,7 +2278,7 @@ class EnMAPFireGUI(tk.Tk):
                 pcm = self.ax.imshow(temp_map, cmap=cmap, interpolation='nearest')
                 self._zoom_to_fire(ind_x, ind_y, temp_map.shape)
             self._draw_colorbar(pcm)
-            self.ax.set_title(title, color=self.t['ink'], fontsize=10)
+            self.ax.set_title(title, color=self.t['ink'], fontsize=9, loc='left')
         else:
             self.ax.text(0.5, 0.5, 'No finite temperature values to display',
                          ha='center', va='center', color=self.t['muted'])
@@ -2049,7 +2288,8 @@ class EnMAPFireGUI(tk.Tk):
 
     # ------------------------------------------------------------ post-run actions
     def _open_results_folder(self):
-        path = self.results_dir.get()
+        # this run's scene folder (results + downloads/); the parent before any run
+        path = self._scene_dir if self._scene_dir and os.path.isdir(self._scene_dir) else self.results_dir.get()
         if path and os.path.isdir(path):
             if sys.platform.startswith('win'):
                 os.startfile(path)

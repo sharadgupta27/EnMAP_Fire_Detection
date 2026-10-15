@@ -1333,6 +1333,20 @@ def _short_scene_id(raster_path, max_len=40):
     return short
 
 
+def _scene_folder_id(raster_path, max_len=40):
+    """Name of the per-scene output folder: the acquisition itself (datatake
+    ID, acquisition timestamp, scene counter), without the detector that
+    _short_scene_id() keeps. A merged run covers VNIR and SWIR alike, and
+    starting from the SWIR file, the VNIR file or the METADATA.XML of one
+    scene must land in the same folder. Non-EnMAP names fall back to
+    _short_scene_id()."""
+    m = _ENMAP_FILENAME_RE.match(os.path.splitext(os.path.basename(raster_path))[0])
+    if m:
+        dt_id, timestamp, scene_num, _detector = m.groups()
+        return f'DT{dt_id}_{timestamp}_{scene_num}'
+    return _short_scene_id(raster_path, max_len=max_len)
+
+
 def _read_enmap_metadata_xml(xml_path, n_bands, detector=None):
     """Best-effort parse of an EnMAP METADATA.XML sidecar for per-band
     wavelength/FWHM/gain/offset. EnMAP processor versions have varied their
@@ -3973,8 +3987,12 @@ def _scatter_over_composite(ax, lon, lat, rgb, ind_x, ind_y, values, cmap, vmin,
     a bright ridge are both invisible, so the panel appears to show nothing
     wherever it matters most. The halo guarantees a fixed local contrast
     against whatever the marker happens to land on, so legibility no longer
-    depends on where the fire is."""
-    ax.pcolormesh(lon, lat, _muted_background(rgb), shading='auto', zorder=0)
+    depends on where the fire is.
+
+    rgb=None draws the markers only, over a background the caller has
+    already drawn (the GUI's Sentinel-2 cloudless basemap)."""
+    if rgb is not None:
+        ax.pcolormesh(lon, lat, _muted_background(rgb), shading='auto', zorder=0)
     if len(ind_x) == 0:
         return None
     if s is None:
@@ -5647,18 +5665,22 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
     # CSV, a validated CSV, up to three method-comparison CSVs, a GeoTIFF
     # and six or more figures, so three scenes put forty-odd files in one
     # listing with the distinguishing part of the name buried mid-string.
+    # The folder is named by the acquisition (_scene_folder_id: no detector
+    # suffix); the files inside keep scene_id, as before.
     scene_id = _short_scene_id(enmap_radiance_path)
     if results_subdir_per_scene:
-        results_dir = os.path.join(results_dir, scene_id)
+        results_dir = os.path.join(results_dir, _scene_folder_id(enmap_radiance_path))
         os.makedirs(results_dir, exist_ok=True)
         print(f'Outputs for this scene go to {results_dir}')
 
-    # Downloaded partner granules stay in the PARENT directory on purpose.
-    # An ECOSTRESS granule or an SLSTR product is hundreds of MB and is
-    # routinely the right partner for several neighbouring scenes from the
-    # same datatake; caching them per scene would re-download the same file
-    # once per scene, which is the opposite of what a results folder is for.
-    download_dir = os.path.dirname(results_dir) if results_subdir_per_scene else results_dir
+    # Everything downloaded for this scene (HLS co-registration reference,
+    # ECOSTRESS / Landsat / VIIRS / SLSTR thermal partners, GOES / SLSTR /
+    # LSA SAF fire products) goes to ONE folder inside the scene folder, so a
+    # scene's results and its inputs travel together and results_dir holds
+    # nothing but scene folders. The cost: a partner granule shared by two
+    # neighbouring scenes is downloaded once per scene.
+    download_dir = os.path.join(results_dir, 'downloads')
+    os.makedirs(download_dir, exist_ok=True)
 
     report = _progress_reporter(progress_hook)
 
