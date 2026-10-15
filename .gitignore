@@ -1,0 +1,60 @@
+# EnMAP L1B scene downloads (multi-GB rasters) - data, not source
+dims_op_oc_oc-en_*/
+EnMAP_data/
+
+# Pipeline outputs
+results_temperature/
+results_*/
+*.png
+*.csv
+*.json
+*.npz
+*.tif
+*.tiff
+*.log
+
+# Figures shown in the README (exception to *.png above)
+!docs/figures/*.png
+
+# Unpublished paper and drafts - not public yet
+paper/
+PAPER_DRAFT*.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv*/
+.ipynb_checkpoints/
+
+# Downloaded thermal partner granules
+*.h5
+*.nc
+*.SEN3/
+*.zip
+*.part
+
+# audit scratch output
+results_audit_check/
+algorithm_verification/outputs/
+
+# PSF deconvolution yardstick: generated fixture and results
+algorithm_verification/psf_fourier/fixture_small.npz
+algorithm_verification/psf_fourier/out/
+
+# Credentials (normally in the home folder, never in the repo)
+.env
+.netrc
+_netrc
+
+# Local assistant / editor settings
+CLAUDE.md
+.claude/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+algorithm_verification/*

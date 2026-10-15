@@ -1,0 +1,512 @@
+{
+ "type": "FeatureCollection",
+ "name": "enmap_fire_candidate_site_boxes",
+ "crs": {
+  "type": "name",
+  "properties": {
+   "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+  }
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.008,
+       39.7716
+      ],
+      [
+       126.5131,
+       39.7716
+      ],
+      [
+       126.5131,
+       46.5629
+      ],
+      [
+       124.008,
+       46.5629
+      ],
+      [
+       124.008,
+       39.7716
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S1",
+    "site_name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "acq_date_utc": "2026-05-29",
+    "acq_time_start_utc": "03:04:12",
+    "acq_time_end_utc": "03:05:59",
+    "west_lon": 124.008,
+    "south_lat": 39.7716,
+    "east_lon": 126.5131,
+    "north_lat": 46.5629,
+    "n_scenes_in_datatake": 25,
+    "n_scenes_3sensor_validated": 10,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 627,
+    "landsat_partner": "LC08_L2SP_118033_20260529_02_T1  (-0.74 h, cloud 0.06-11.5%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_44770_008_* tiles 51TXG/51TXF/51TWF/51TXE  (+1.04 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -69.1426,
+       -39.199
+      ],
+      [
+       -68.5429,
+       -39.199
+      ],
+      [
+       -68.5429,
+       -38.3421
+      ],
+      [
+       -69.1426,
+       -38.3421
+      ],
+      [
+       -69.1426,
+       -39.199
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S2",
+    "site_name": "Neuquen - Patagonian steppe",
+    "country": "Argentina",
+    "tier": 1,
+    "datatake": "DT0000185160",
+    "acq_date_utc": "2026-03-25",
+    "acq_time_start_utc": "15:05:54",
+    "acq_time_end_utc": "15:06:03",
+    "west_lon": -69.1426,
+    "south_lat": -39.199,
+    "east_lon": -68.5429,
+    "north_lat": -38.3421,
+    "n_scenes_in_datatake": 3,
+    "n_scenes_3sensor_validated": 3,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 81,
+    "landsat_partner": "LC09_L2SP_231087_20260325_02_T1  (-0.72 h, cloud 0.05%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_43762_022_19HDT_20260325T134701  (-1.32 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18.6199,
+       45.8047
+      ],
+      [
+       19.3778,
+       45.8047
+      ],
+      [
+       19.3778,
+       46.9344
+      ],
+      [
+       18.6199,
+       46.9344
+      ],
+      [
+       18.6199,
+       45.8047
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S3",
+    "site_name": "Vojvodina / S Hungary (crop-residue burning)",
+    "country": "Serbia / Hungary",
+    "tier": 1,
+    "datatake": "DT0000207603",
+    "acq_date_utc": "2026-08-04",
+    "acq_time_start_utc": "10:11:24",
+    "acq_time_end_utc": "10:11:38",
+    "west_lon": 18.6199,
+    "south_lat": 45.8047,
+    "east_lon": 19.3778,
+    "north_lat": 46.9344,
+    "n_scenes_in_datatake": 4,
+    "n_scenes_3sensor_validated": 3,
+    "min_cloud_pct": 1.0,
+    "s2_active_fire_px": 38,
+    "landsat_partner": "LC08_L2SP_187028_20260804_02_T1  (-0.74 h, cloud 0.19%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_45814_008_33TYM_20260804T091902  (-0.88 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       102.7647,
+       22.3829
+      ],
+      [
+       103.2396,
+       22.3829
+      ],
+      [
+       103.2396,
+       23.2382
+      ],
+      [
+       102.7647,
+       23.2382
+      ],
+      [
+       102.7647,
+       22.3829
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S4",
+    "site_name": "Lai Chau / Lao Cai (swidden burning)",
+    "country": "Vietnam",
+    "tier": 1,
+    "datatake": "DT0000185878",
+    "acq_date_utc": "2026-03-31",
+    "acq_time_start_utc": "04:19:24",
+    "acq_time_end_utc": "04:19:33",
+    "west_lon": 102.7647,
+    "south_lat": 22.3829,
+    "east_lon": 103.2396,
+    "north_lat": 23.2382,
+    "n_scenes_in_datatake": 3,
+    "n_scenes_3sensor_validated": 1,
+    "min_cloud_pct": 2.0,
+    "s2_active_fire_px": 35,
+    "landsat_partner": "LC09_L2SP_129045_20260331_02_T1  (-0.73 h, cloud 7.6%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_43850_003_48QUK_20260331T031817  (-1.02 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -123.4706,
+       48.3938
+      ],
+      [
+       -122.677,
+       48.3938
+      ],
+      [
+       -122.677,
+       49.2611
+      ],
+      [
+       -123.4706,
+       49.2611
+      ],
+      [
+       -123.4706,
+       48.3938
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S5",
+    "site_name": "SW British Columbia / N Washington",
+    "country": "Canada / USA",
+    "tier": 1,
+    "datatake": "DT0000002425",
+    "acq_date_utc": "2022-08-11",
+    "acq_time_start_utc": "19:59:24",
+    "acq_time_end_utc": "19:59:32",
+    "west_lon": -123.4706,
+    "south_lat": 48.3938,
+    "east_lon": -122.677,
+    "north_lat": 49.2611,
+    "n_scenes_in_datatake": 3,
+    "n_scenes_3sensor_validated": 3,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 105,
+    "landsat_partner": "Landsat 8 2022-08-11  (-0.86 h, cloud 12.5%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_*_10UDV_20220811T200835  (+0.15 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -117.5597,
+       34.4697
+      ],
+      [
+       -117.1571,
+       34.4697
+      ],
+      [
+       -117.1571,
+       34.7836
+      ],
+      [
+       -117.5597,
+       34.7836
+      ],
+      [
+       -117.5597,
+       34.4697
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S6",
+    "site_name": "Mojave / Victorville, California",
+    "country": "USA",
+    "tier": 1,
+    "datatake": "DT0000099384",
+    "acq_date_utc": "2024-10-19",
+    "acq_time_start_utc": "19:06:16",
+    "acq_time_end_utc": "19:06:16",
+    "west_lon": -117.5597,
+    "south_lat": 34.4697,
+    "east_lon": -117.1571,
+    "north_lat": 34.7836,
+    "n_scenes_in_datatake": 1,
+    "n_scenes_3sensor_validated": 1,
+    "min_cloud_pct": 1.0,
+    "s2_active_fire_px": 41,
+    "landsat_partner": "Landsat 9 2024-10-19  (-0.73 h, cloud 0.41%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_*_11SMU_20241019T192357  (+0.29 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.9262,
+       41.477
+      ],
+      [
+       -7.8527,
+       41.477
+      ],
+      [
+       -7.8527,
+       43.6824
+      ],
+      [
+       -8.9262,
+       43.6824
+      ],
+      [
+       -8.9262,
+       41.477
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S7",
+    "site_name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "acq_date_utc": "2025-08-07",
+    "acq_time_start_utc": "12:03:39",
+    "acq_time_end_utc": "12:04:10",
+    "west_lon": -8.9262,
+    "south_lat": 41.477,
+    "east_lon": -7.8527,
+    "north_lat": 43.6824,
+    "n_scenes_in_datatake": 8,
+    "n_scenes_3sensor_validated": 0,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 0,
+    "landsat_partner": "LC09_L2SP_205029_20250807_20250808_02_T1_ST  (-0.74 h, cloud 0.17%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_40187_011_29TNF_20250807T155225_0713_01  (+3.81 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.372,
+       39.344
+      ],
+      [
+       -6.2201,
+       39.344
+      ],
+      [
+       -6.2201,
+       43.6859
+      ],
+      [
+       -8.372,
+       43.6859
+      ],
+      [
+       -8.372,
+       39.344
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S8",
+    "site_name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "acq_date_utc": "2025-08-19",
+    "acq_time_start_utc": "12:14:39",
+    "acq_time_end_utc": "12:15:46",
+    "west_lon": -8.372,
+    "south_lat": 39.344,
+    "east_lon": -6.2201,
+    "north_lat": 43.6859,
+    "n_scenes_in_datatake": 16,
+    "n_scenes_3sensor_validated": 0,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 0,
+    "landsat_partner": "LC09_L2SP_205030_20250823_20250824_02_T1_ST  (+95.08 h, cloud 0.28%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_40383_003_29TNG_20250820T051859_0713_01  (+17.07 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.5104,
+       41.3365
+      ],
+      [
+       -5.6298,
+       41.3365
+      ],
+      [
+       -5.6298,
+       43.0016
+      ],
+      [
+       -6.5104,
+       43.0016
+      ],
+      [
+       -6.5104,
+       41.3365
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S9",
+    "site_name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "acq_date_utc": "2025-08-22",
+    "acq_time_start_utc": "11:53:22",
+    "acq_time_end_utc": "11:53:45",
+    "west_lon": -6.5104,
+    "south_lat": 41.3365,
+    "east_lon": -5.6298,
+    "north_lat": 43.0016,
+    "n_scenes_in_datatake": 6,
+    "n_scenes_3sensor_validated": 0,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 0,
+    "landsat_partner": "LC09_L2SP_203031_20250825_20250826_02_T1_ST  (+71.24 h, cloud 1.53%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_40413_002_29TQF_20250822T034214_0713_01  (-8.19 h)"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.534,
+       -17.9681
+      ],
+      [
+       -62.3057,
+       -17.9681
+      ],
+      [
+       -62.3057,
+       -13.5772
+      ],
+      [
+       -63.534,
+       -13.5772
+      ],
+      [
+       -63.534,
+       -17.9681
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site_id": "S10",
+    "site_name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "acq_date_utc": "2024-08-12",
+    "acq_time_start_utc": "15:02:07",
+    "acq_time_end_utc": "15:03:13",
+    "west_lon": -63.534,
+    "south_lat": -17.9681,
+    "east_lon": -62.3057,
+    "north_lat": -13.5772,
+    "n_scenes_in_datatake": 16,
+    "n_scenes_3sensor_validated": 0,
+    "min_cloud_pct": 0.0,
+    "s2_active_fire_px": 0,
+    "landsat_partner": "LC08_L2SP_230071_20240811_20240815_02_T1_ST  (-24.87 h, cloud 0.00%)",
+    "ecostress_partner": "ECOv002_L2T_LSTE_34605_013_20KNF_20240813T074642_0712_01  (+16.74 h)"
+   }
+  }
+ ]
+}

@@ -1,0 +1,3582 @@
+{
+ "type": "FeatureCollection",
+ "name": "enmap_fire_candidate_footprints",
+ "crs": {
+  "type": "name",
+  "properties": {
+   "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+  }
+ },
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       126.123544,
+       46.562877
+      ],
+      [
+       126.029858,
+       46.288952
+      ],
+      [
+       126.417521,
+       46.238178
+      ],
+      [
+       126.513078,
+       46.511861
+      ],
+      [
+       126.123544,
+       46.562877
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030410Z_009_V010506_20260603T234512Z",
+    "datetime": "2026-05-29T03:04:12.851824Z",
+    "cloud": "46",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       126.031548,
+       46.293942
+      ],
+      [
+       125.9389,
+       46.019779
+      ],
+      [
+       126.324774,
+       45.969228
+      ],
+      [
+       126.419253,
+       46.243164
+      ],
+      [
+       126.031548,
+       46.293942
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030415Z_010_V010506_20260603T234512Z",
+    "datetime": "2026-05-29T03:04:17.303936Z",
+    "cloud": "8",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.940575,
+       46.024777
+      ],
+      [
+       125.848927,
+       45.750297
+      ],
+      [
+       126.232931,
+       45.699964
+      ],
+      [
+       126.326483,
+       45.974222
+      ],
+      [
+       125.940575,
+       46.024777
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030419Z_011_V010506_20260604T000808Z",
+    "datetime": "2026-05-29T03:04:21.756028Z",
+    "cloud": "3",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.850615,
+       45.755289
+      ],
+      [
+       125.758954,
+       45.481252
+      ],
+      [
+       126.141307,
+       45.431136
+      ],
+      [
+       126.234639,
+       45.704953
+      ],
+      [
+       125.850615,
+       45.755289
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030423Z_012_V010506_20260604T000906Z",
+    "datetime": "2026-05-29T03:04:26.208126Z",
+    "cloud": "14",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.760615,
+       45.486244
+      ],
+      [
+       125.67004,
+       45.21178
+      ],
+      [
+       126.050482,
+       45.1619
+      ],
+      [
+       126.143004,
+       45.436123
+      ],
+      [
+       125.760615,
+       45.486244
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030428Z_013_V010506_20260604T000918Z",
+    "datetime": "2026-05-29T03:04:30.660231Z",
+    "cloud": "32",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.67168,
+       45.216782
+      ],
+      [
+       125.581656,
+       44.942412
+      ],
+      [
+       125.960453,
+       44.892736
+      ],
+      [
+       126.05215,
+       45.166899
+      ],
+      [
+       125.67168,
+       45.216782
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030432Z_014_V010506_20260604T001608Z",
+    "datetime": "2026-05-29T03:04:35.112343Z",
+    "cloud": "13",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.583298,
+       44.947406
+      ],
+      [
+       125.493816,
+       44.673091
+      ],
+      [
+       125.870856,
+       44.623641
+      ],
+      [
+       125.962116,
+       44.897728
+      ],
+      [
+       125.583298,
+       44.947406
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030437Z_015_V010506_20260604T002108Z",
+    "datetime": "2026-05-29T03:04:39.564443Z",
+    "cloud": "2",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.495439,
+       44.678094
+      ],
+      [
+       125.406807,
+       44.403363
+      ],
+      [
+       125.781972,
+       44.354143
+      ],
+      [
+       125.872507,
+       44.62864
+      ],
+      [
+       125.495439,
+       44.678094
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030441Z_016_V010506_20260604T002141Z",
+    "datetime": "2026-05-29T03:04:44.016534Z",
+    "cloud": "7",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.408421,
+       44.408368
+      ],
+      [
+       125.319937,
+       44.133967
+      ],
+      [
+       125.693523,
+       44.084954
+      ],
+      [
+       125.783615,
+       44.359144
+      ],
+      [
+       125.408421,
+       44.408368
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030446Z_017_V010506_20260604T002540Z",
+    "datetime": "2026-05-29T03:04:48.468627Z",
+    "cloud": "5",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.321547,
+       44.138961
+      ],
+      [
+       125.233794,
+       43.864623
+      ],
+      [
+       125.605698,
+       43.815827
+      ],
+      [
+       125.695166,
+       44.089944
+      ],
+      [
+       125.321547,
+       44.138961
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030450Z_018_V010506_20260604T002711Z",
+    "datetime": "2026-05-29T03:04:52.920727Z",
+    "cloud": "3",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.235371,
+       43.869632
+      ],
+      [
+       125.149047,
+       43.594491
+      ],
+      [
+       125.519126,
+       43.545901
+      ],
+      [
+       125.607331,
+       43.820829
+      ],
+      [
+       125.235371,
+       43.869632
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030455Z_019_V010506_20260604T002711Z",
+    "datetime": "2026-05-29T03:04:57.372832Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.150703,
+       43.599489
+      ],
+      [
+       125.06406,
+       43.324899
+      ],
+      [
+       125.432793,
+       43.276472
+      ],
+      [
+       125.520736,
+       43.550907
+      ],
+      [
+       125.150703,
+       43.599489
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030459Z_020_V010506_20260604T002721Z",
+    "datetime": "2026-05-29T03:05:01.824916Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       125.065629,
+       43.329899
+      ],
+      [
+       124.979501,
+       43.055392
+      ],
+      [
+       125.346563,
+       43.007188
+      ],
+      [
+       125.434348,
+       43.281475
+      ],
+      [
+       125.065629,
+       43.329899
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030504Z_021_V010506_20260604T002744Z",
+    "datetime": "2026-05-29T03:05:06.276994Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.981012,
+       43.060406
+      ],
+      [
+       124.896421,
+       42.785318
+      ],
+      [
+       125.261589,
+       42.737343
+      ],
+      [
+       125.348132,
+       43.012194
+      ],
+      [
+       124.981012,
+       43.060406
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030508Z_022_V010506_20260604T002754Z",
+    "datetime": "2026-05-29T03:05:10.729104Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.898068,
+       42.790313
+      ],
+      [
+       124.812971,
+       42.515667
+      ],
+      [
+       125.177023,
+       42.467823
+      ],
+      [
+       125.263145,
+       42.742354
+      ],
+      [
+       124.898068,
+       42.790313
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030512Z_023_V010506_20260604T002835Z",
+    "datetime": "2026-05-29T03:05:15.181211Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.81457,
+       42.520657
+      ],
+      [
+       124.729926,
+       42.245978
+      ],
+      [
+       125.092241,
+       42.198368
+      ],
+      [
+       125.178538,
+       42.472827
+      ],
+      [
+       124.81457,
+       42.520657
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030517Z_024_V010506_20260604T003038Z",
+    "datetime": "2026-05-29T03:05:19.633315Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 25
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.731469,
+       42.250984
+      ],
+      [
+       124.64761,
+       41.976043
+      ],
+      [
+       125.008688,
+       41.928574
+      ],
+      [
+       125.093834,
+       42.203367
+      ],
+      [
+       124.731469,
+       42.250984
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030521Z_025_V010506_20260604T003840Z",
+    "datetime": "2026-05-29T03:05:24.085422Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 46
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.649009,
+       41.981068
+      ],
+      [
+       124.566312,
+       41.705767
+      ],
+      [
+       124.925547,
+       41.658526
+      ],
+      [
+       125.010148,
+       41.933591
+      ],
+      [
+       124.649009,
+       41.981068
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030526Z_026_V010506_20260604T004139Z",
+    "datetime": "2026-05-29T03:05:28.537521Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 53
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.567745,
+       41.710797
+      ],
+      [
+       124.485432,
+       41.435402
+      ],
+      [
+       124.843432,
+       41.38829
+      ],
+      [
+       124.927174,
+       41.663527
+      ],
+      [
+       124.567745,
+       41.710797
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030530Z_027_V010506_20260604T004610Z",
+    "datetime": "2026-05-29T03:05:32.989615Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 56
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.487251,
+       41.440359
+      ],
+      [
+       124.404518,
+       41.165823
+      ],
+      [
+       124.761135,
+       41.118899
+      ],
+      [
+       124.844975,
+       41.393289
+      ],
+      [
+       124.487251,
+       41.440359
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030535Z_028_V010506_20260604T010333Z",
+    "datetime": "2026-05-29T03:05:37.441720Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 42
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.405888,
+       41.170849
+      ],
+      [
+       124.324266,
+       40.89566
+      ],
+      [
+       124.679163,
+       40.848955
+      ],
+      [
+       124.762712,
+       41.123895
+      ],
+      [
+       124.405888,
+       41.170849
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030539Z_029_V010506_20260604T010451Z",
+    "datetime": "2026-05-29T03:05:41.893835Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 7
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.325687,
+       40.900681
+      ],
+      [
+       124.243568,
+       40.625971
+      ],
+      [
+       124.597334,
+       40.579421
+      ],
+      [
+       124.680657,
+       40.853967
+      ],
+      [
+       124.325687,
+       40.900681
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030544Z_030_V010506_20260604T010700Z",
+    "datetime": "2026-05-29T03:05:46.345934Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 18
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.245197,
+       40.630957
+      ],
+      [
+       124.165103,
+       40.355598
+      ],
+      [
+       124.516575,
+       40.309347
+      ],
+      [
+       124.598761,
+       40.584438
+      ],
+      [
+       124.245197,
+       40.630957
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030548Z_031_V010506_20260604T010737Z",
+    "datetime": "2026-05-29T03:05:50.798022Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 83
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.166486,
+       40.360629
+      ],
+      [
+       124.085503,
+       40.085443
+      ],
+      [
+       124.436208,
+       40.039269
+      ],
+      [
+       124.518123,
+       40.314353
+      ],
+      [
+       124.166486,
+       40.360629
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030552Z_032_V010506_20260604T010739Z",
+    "datetime": "2026-05-29T03:05:55.250130Z",
+    "cloud": "1",
+    "validated": "YES",
+    "fire_px": 192
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       124.086868,
+       40.090471
+      ],
+      [
+       124.007982,
+       39.817598
+      ],
+      [
+       124.357463,
+       39.771566
+      ],
+      [
+       124.437742,
+       40.044272
+      ],
+      [
+       124.086868,
+       40.090471
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S1",
+    "name": "Yalu River valley (Liaoning/Jilin, CN - DPRK border)",
+    "country": "China / DPRK",
+    "tier": 1,
+    "datatake": "DT0000198082",
+    "scene_id": "ENMAP01-____L2A-DT0000198082_20260529T030557Z_033_V010506_20260604T010816Z",
+    "datetime": "2026-05-29T03:05:59.680496Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 105
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -68.888548,
+       -38.342051
+      ],
+      [
+       -68.973511,
+       -38.613047
+      ],
+      [
+       -68.62654,
+       -38.664386
+      ],
+      [
+       -68.542912,
+       -38.393176
+      ],
+      [
+       -68.888548,
+       -38.342051
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S2",
+    "name": "Neuquen - Patagonian steppe",
+    "country": "Argentina",
+    "tier": 1,
+    "datatake": "DT0000185160",
+    "scene_id": "ENMAP01-____L2A-DT0000185160_20260325T150551Z_001_V010506_20260326T063054Z",
+    "datetime": "2026-03-25T15:05:54.243985Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 72
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -68.971934,
+       -38.608067
+      ],
+      [
+       -69.05819,
+       -38.881342
+      ],
+      [
+       -68.710204,
+       -38.932872
+      ],
+      [
+       -68.625002,
+       -38.6594
+      ],
+      [
+       -68.971934,
+       -38.608067
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S2",
+    "name": "Neuquen - Patagonian steppe",
+    "country": "Argentina",
+    "tier": 1,
+    "datatake": "DT0000185160",
+    "scene_id": "ENMAP01-____L2A-DT0000185160_20260325T150556Z_002_V010506_20260326T063133Z",
+    "datetime": "2026-03-25T15:05:58.674360Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 9
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -69.056618,
+       -38.87636
+      ],
+      [
+       -69.142557,
+       -39.147263
+      ],
+      [
+       -68.793125,
+       -39.199022
+      ],
+      [
+       -68.708633,
+       -38.92789
+      ],
+      [
+       -69.056618,
+       -38.87636
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S2",
+    "name": "Neuquen - Patagonian steppe",
+    "country": "Argentina",
+    "tier": 1,
+    "datatake": "DT0000185160",
+    "scene_id": "ENMAP01-____L2A-DT0000185160_20260325T150600Z_003_V010506_20260326T063129Z",
+    "datetime": "2026-03-25T15:06:03.104721Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18.977903,
+       46.9344
+      ],
+      [
+       18.885782,
+       46.660229
+      ],
+      [
+       19.283665,
+       46.60973
+      ],
+      [
+       19.377757,
+       46.883666
+      ],
+      [
+       18.977903,
+       46.9344
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S3",
+    "name": "Vojvodina / S Hungary (crop-residue burning)",
+    "country": "Serbia / Hungary",
+    "tier": 1,
+    "datatake": "DT0000207603",
+    "scene_id": "ENMAP01-____L2A-DT0000207603_20260804T101122Z_005_V010506_20260805T231753Z",
+    "datetime": "2026-08-04T10:11:24.994182Z",
+    "cloud": 1,
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18.887492,
+       46.665218
+      ],
+      [
+       18.795975,
+       46.390937
+      ],
+      [
+       19.192053,
+       46.340645
+      ],
+      [
+       19.285375,
+       46.614719
+      ],
+      [
+       18.887492,
+       46.665218
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S3",
+    "name": "Vojvodina / S Hungary (crop-residue burning)",
+    "country": "Serbia / Hungary",
+    "tier": 1,
+    "datatake": "DT0000207603",
+    "scene_id": "ENMAP01-____L2A-DT0000207603_20260804T101127Z_006_V010506_20260805T231756Z",
+    "datetime": "2026-08-04T10:11:29.446279Z",
+    "cloud": 3,
+    "validated": "YES",
+    "fire_px": 8
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18.797632,
+       46.395935
+      ],
+      [
+       18.70732,
+       46.121338
+      ],
+      [
+       19.101325,
+       46.071285
+      ],
+      [
+       19.19374,
+       46.345639
+      ],
+      [
+       18.797632,
+       46.395935
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S3",
+    "name": "Vojvodina / S Hungary (crop-residue burning)",
+    "country": "Serbia / Hungary",
+    "tier": 1,
+    "datatake": "DT0000207603",
+    "scene_id": "ENMAP01-____L2A-DT0000207603_20260804T101131Z_007_V010506_20260805T231756Z",
+    "datetime": "2026-08-04T10:11:33.898376Z",
+    "cloud": 2,
+    "validated": "YES",
+    "fire_px": 25
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       18.708966,
+       46.126339
+      ],
+      [
+       18.619876,
+       45.854499
+      ],
+      [
+       19.011974,
+       45.804676
+      ],
+      [
+       19.103,
+       46.076283
+      ],
+      [
+       18.708966,
+       46.126339
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S3",
+    "name": "Vojvodina / S Hungary (crop-residue burning)",
+    "country": "Serbia / Hungary",
+    "tier": 1,
+    "datatake": "DT0000207603",
+    "scene_id": "ENMAP01-____L2A-DT0000207603_20260804T101136Z_008_V010506_20260805T231754Z",
+    "datetime": "2026-08-04T10:11:38.328734Z",
+    "cloud": 0,
+    "validated": "YES",
+    "fire_px": 5
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       102.95078,
+       23.238185
+      ],
+      [
+       102.889178,
+       22.963493
+      ],
+      [
+       103.176328,
+       22.924263
+      ],
+      [
+       103.239583,
+       23.198707
+      ],
+      [
+       102.95078,
+       23.238185
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S4",
+    "name": "Lai Chau / Lao Cai (swidden burning)",
+    "country": "Vietnam",
+    "tier": 1,
+    "datatake": "DT0000185878",
+    "scene_id": "ENMAP01-____L2A-DT0000185878_20260331T041922Z_001_V010506_20260331T224054Z",
+    "datetime": "2026-03-31T04:19:24.293599Z",
+    "cloud": "7",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       102.890681,
+       22.968485
+      ],
+      [
+       102.826392,
+       22.691467
+      ],
+      [
+       103.113153,
+       22.652294
+      ],
+      [
+       103.177482,
+       22.929313
+      ],
+      [
+       102.890681,
+       22.968485
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S4",
+    "name": "Lai Chau / Lao Cai (swidden burning)",
+    "country": "Vietnam",
+    "tier": 1,
+    "datatake": "DT0000185878",
+    "scene_id": "ENMAP01-____L2A-DT0000185878_20260331T041926Z_002_V010506_20260331T224111Z",
+    "datetime": "2026-03-31T04:19:28.723966Z",
+    "cloud": "2",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       102.827488,
+       22.696525
+      ],
+      [
+       102.764696,
+       22.422174
+      ],
+      [
+       103.05179,
+       22.382914
+      ],
+      [
+       103.114376,
+       22.65733
+      ],
+      [
+       102.827488,
+       22.696525
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S4",
+    "name": "Lai Chau / Lao Cai (swidden burning)",
+    "country": "Vietnam",
+    "tier": 1,
+    "datatake": "DT0000185878",
+    "scene_id": "ENMAP01-____L2A-DT0000185878_20260331T041930Z_003_V010506_20260331T224109Z",
+    "datetime": "2026-03-31T04:19:33.154331Z",
+    "cloud": "10",
+    "validated": "YES",
+    "fire_px": 35
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -123.113782,
+       49.261141
+      ],
+      [
+       -123.234681,
+       48.993372
+      ],
+      [
+       -122.800329,
+       48.921551
+      ],
+      [
+       -122.677018,
+       49.188858
+      ],
+      [
+       -123.113782,
+       49.261141
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S5",
+    "name": "SW British Columbia / N Washington",
+    "country": "Canada / USA",
+    "tier": 1,
+    "datatake": "DT0000002425",
+    "scene_id": "ENMAP01-____L2A-DT0000002425_20220811T195924Z_001_V010502_20251015T065505Z",
+    "datetime": "2022-08-11T19:59:24Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 51
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -123.232464,
+       48.998296
+      ],
+      [
+       -123.35359,
+       48.727853
+      ],
+      [
+       -122.921911,
+       48.656534
+      ],
+      [
+       -122.798072,
+       48.926468
+      ],
+      [
+       -123.232464,
+       48.998296
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S5",
+    "name": "SW British Columbia / N Washington",
+    "country": "Canada / USA",
+    "tier": 1,
+    "datatake": "DT0000002425",
+    "scene_id": "ENMAP01-____L2A-DT0000002425_20220811T195928Z_002_V010502_20251015T070018Z",
+    "datetime": "2022-08-11T19:59:28Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 47
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -123.351395,
+       48.732779
+      ],
+      [
+       -123.470591,
+       48.464864
+      ],
+      [
+       -123.040229,
+       48.393838
+      ],
+      [
+       -122.919571,
+       48.661436
+      ],
+      [
+       -123.351395,
+       48.732779
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S5",
+    "name": "SW British Columbia / N Washington",
+    "country": "Canada / USA",
+    "tier": 1,
+    "datatake": "DT0000002425",
+    "scene_id": "ENMAP01-____L2A-DT0000002425_20220811T195932Z_003_V010502_20251015T070904Z",
+    "datetime": "2022-08-11T19:59:32Z",
+    "cloud": "0",
+    "validated": "YES",
+    "fire_px": 7
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -117.490589,
+       34.783608
+      ],
+      [
+       -117.559723,
+       34.512635
+      ],
+      [
+       -117.227748,
+       34.469746
+      ],
+      [
+       -117.157068,
+       34.740539
+      ],
+      [
+       -117.490589,
+       34.783608
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S6",
+    "name": "Mojave / Victorville, California",
+    "country": "USA",
+    "tier": 1,
+    "datatake": "DT0000099384",
+    "scene_id": "ENMAP01-____L2A-DT0000099384_20241019T190613Z_001_V010502_20260606T153917Z",
+    "datetime": "2024-10-19T19:06:16.216119Z",
+    "cloud": "1",
+    "validated": "YES",
+    "fire_px": 41
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.216516,
+       43.68242
+      ],
+      [
+       -8.30866,
+       43.408224
+      ],
+      [
+       -7.946661,
+       43.356666
+      ],
+      [
+       -7.852719,
+       43.63062
+      ],
+      [
+       -8.216516,
+       43.68242
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120339Z_002_V010502_20250809T133011Z",
+    "datetime": "2025-08-07T12:03:39Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.306983,
+       43.413216
+      ],
+      [
+       -8.399262,
+       43.139668
+      ],
+      [
+       -8.038871,
+       43.088387
+      ],
+      [
+       -7.94495,
+       43.361653
+      ],
+      [
+       -8.306983,
+       43.413216
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120343Z_003_V010502_20250809T133011Z",
+    "datetime": "2025-08-07T12:03:43Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.397588,
+       43.144652
+      ],
+      [
+       -8.488568,
+       42.870393
+      ],
+      [
+       -8.129555,
+       42.819314
+      ],
+      [
+       -8.037176,
+       43.093368
+      ],
+      [
+       -8.397588,
+       43.144652
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120348Z_004_V010502_20250809T133017Z",
+    "datetime": "2025-08-07T12:03:48Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.486921,
+       42.875396
+      ],
+      [
+       -8.577435,
+       42.601376
+      ],
+      [
+       -8.220257,
+       42.550544
+      ],
+      [
+       -8.127887,
+       42.824314
+      ],
+      [
+       -8.486921,
+       42.875396
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120352Z_005_V010502_20250809T133113Z",
+    "datetime": "2025-08-07T12:03:52Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.575784,
+       42.60636
+      ],
+      [
+       -8.665961,
+       42.332378
+      ],
+      [
+       -8.310232,
+       42.281777
+      ],
+      [
+       -8.218621,
+       42.555528
+      ],
+      [
+       -8.575784,
+       42.60636
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120357Z_006_V010502_20250809T133117Z",
+    "datetime": "2025-08-07T12:03:57Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.664332,
+       42.337378
+      ],
+      [
+       -8.753648,
+       42.063013
+      ],
+      [
+       -8.399168,
+       42.012615
+      ],
+      [
+       -8.30854,
+       42.286771
+      ],
+      [
+       -8.664332,
+       42.337378
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120401Z_007_V010502_20250809T133117Z",
+    "datetime": "2025-08-07T12:04:01Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.752023,
+       42.068008
+      ],
+      [
+       -8.840523,
+       41.793709
+      ],
+      [
+       -8.487654,
+       41.743516
+      ],
+      [
+       -8.39749,
+       42.017602
+      ],
+      [
+       -8.752023,
+       42.068008
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120406Z_008_V010502_20250809T133122Z",
+    "datetime": "2025-08-07T12:04:06Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.83892,
+       41.798714
+      ],
+      [
+       -8.926186,
+       41.52698
+      ],
+      [
+       -8.574492,
+       41.476979
+      ],
+      [
+       -8.486106,
+       41.748525
+      ],
+      [
+       -8.83892,
+       41.798714
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S7",
+    "name": "Galicia / N Portugal (Aug-2025 fires)",
+    "country": "Spain / Portugal",
+    "tier": 2,
+    "datatake": "DT0000146122",
+    "scene_id": "ENMAP01-____L2A-DT0000146122_20250807T120410Z_009_V010502_20250809T133153Z",
+    "datetime": "2025-08-07T12:04:10Z",
+    "cloud": "27",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.708342,
+       43.685859
+      ],
+      [
+       -6.823429,
+       43.415714
+      ],
+      [
+       -6.339255,
+       43.327523
+      ],
+      [
+       -6.220087,
+       43.596812
+      ],
+      [
+       -6.708342,
+       43.685859
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121439Z_002_V010502_20250822T162005Z",
+    "datetime": "2025-08-19T12:14:39Z",
+    "cloud": "13",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.821685,
+       43.420693
+      ],
+      [
+       -6.934763,
+       43.150775
+      ],
+      [
+       -6.451244,
+       43.062861
+      ],
+      [
+       -6.33744,
+       43.332488
+      ],
+      [
+       -6.821685,
+       43.420693
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121443Z_003_V010502_20250822T162015Z",
+    "datetime": "2025-08-19T12:14:43Z",
+    "cloud": "45",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.933425,
+       43.155818
+      ],
+      [
+       -7.042372,
+       42.884986
+      ],
+      [
+       -6.563502,
+       42.798026
+      ],
+      [
+       -6.44921,
+       43.067779
+      ],
+      [
+       -6.933425,
+       43.155818
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121448Z_004_V010502_20250822T162013Z",
+    "datetime": "2025-08-19T12:14:48Z",
+    "cloud": "52",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.040861,
+       42.890002
+      ],
+      [
+       -7.153268,
+       42.619922
+      ],
+      [
+       -6.669205,
+       42.532174
+      ],
+      [
+       -6.561096,
+       42.802881
+      ],
+      [
+       -7.040861,
+       42.890002
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121452Z_005_V010502_20250822T162134Z",
+    "datetime": "2025-08-19T12:14:52Z",
+    "cloud": "23",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.1504,
+       42.624694
+      ],
+      [
+       -7.257746,
+       42.353918
+      ],
+      [
+       -6.786472,
+       42.268597
+      ],
+      [
+       -6.667193,
+       42.537092
+      ],
+      [
+       -7.1504,
+       42.624694
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121457Z_006_V010502_20250822T162134Z",
+    "datetime": "2025-08-19T12:14:57Z",
+    "cloud": "34",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.25573,
+       42.358841
+      ],
+      [
+       -7.364911,
+       42.088093
+      ],
+      [
+       -6.889787,
+       42.002195
+      ],
+      [
+       -6.783512,
+       42.273347
+      ],
+      [
+       -7.25573,
+       42.358841
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121501Z_007_V010502_20250822T162134Z",
+    "datetime": "2025-08-19T12:15:01Z",
+    "cloud": "10",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.363655,
+       42.093155
+      ],
+      [
+       -7.466236,
+       41.821482
+      ],
+      [
+       -6.994761,
+       41.736348
+      ],
+      [
+       -6.888567,
+       42.007266
+      ],
+      [
+       -7.363655,
+       42.093155
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121506Z_008_V010502_20250822T162150Z",
+    "datetime": "2025-08-19T12:15:06Z",
+    "cloud": "4",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.464111,
+       41.826382
+      ],
+      [
+       -7.571624,
+       41.55567
+      ],
+      [
+       -7.096751,
+       41.470062
+      ],
+      [
+       -6.992802,
+       41.741275
+      ],
+      [
+       -7.464111,
+       41.826382
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121510Z_009_V010502_20250822T162300Z",
+    "datetime": "2025-08-19T12:15:10Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.569206,
+       41.560527
+      ],
+      [
+       -7.67454,
+       41.28928
+      ],
+      [
+       -7.204401,
+       41.204627
+      ],
+      [
+       -7.095162,
+       41.475063
+      ],
+      [
+       -7.569206,
+       41.560527
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121515Z_010_V010502_20250822T162336Z",
+    "datetime": "2025-08-19T12:15:15Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.6728,
+       41.294248
+      ],
+      [
+       -7.776287,
+       41.022995
+      ],
+      [
+       -7.308057,
+       40.938811
+      ],
+      [
+       -7.202381,
+       41.209543
+      ],
+      [
+       -7.6728,
+       41.294248
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121519Z_011_V010502_20250822T162549Z",
+    "datetime": "2025-08-19T12:15:19Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.774235,
+       41.027911
+      ],
+      [
+       -7.877315,
+       40.756392
+      ],
+      [
+       -7.410004,
+       40.672482
+      ],
+      [
+       -7.306341,
+       40.943784
+      ],
+      [
+       -7.774235,
+       41.027911
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121523Z_012_V010502_20250822T163643Z",
+    "datetime": "2025-08-19T12:15:23Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.875519,
+       40.761348
+      ],
+      [
+       -7.977582,
+       40.49015
+      ],
+      [
+       -7.516698,
+       40.407516
+      ],
+      [
+       -7.408108,
+       40.677419
+      ],
+      [
+       -7.875519,
+       40.761348
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121528Z_013_V010502_20250822T163742Z",
+    "datetime": "2025-08-19T12:15:28Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -7.975318,
+       40.495024
+      ],
+      [
+       -8.076724,
+       40.223172
+      ],
+      [
+       -7.615019,
+       40.140488
+      ],
+      [
+       -7.515609,
+       40.412595
+      ],
+      [
+       -7.975318,
+       40.495024
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121532Z_014_V010502_20250822T164450Z",
+    "datetime": "2025-08-19T12:15:32Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.074879,
+       40.228124
+      ],
+      [
+       -8.178341,
+       39.957023
+      ],
+      [
+       -7.715521,
+       39.874294
+      ],
+      [
+       -7.613298,
+       40.14546
+      ],
+      [
+       -8.074879,
+       40.228124
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121537Z_015_V010502_20250822T165146Z",
+    "datetime": "2025-08-19T12:15:37Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.176789,
+       39.962014
+      ],
+      [
+       -8.276188,
+       39.690119
+      ],
+      [
+       -7.814953,
+       39.607784
+      ],
+      [
+       -7.713481,
+       39.879196
+      ],
+      [
+       -8.176789,
+       39.962014
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121541Z_016_V010502_20250822T170509Z",
+    "datetime": "2025-08-19T12:15:41Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -8.274168,
+       39.695039
+      ],
+      [
+       -8.372008,
+       39.425655
+      ],
+      [
+       -7.913994,
+       39.344002
+      ],
+      [
+       -7.813092,
+       39.61273
+      ],
+      [
+       -8.274168,
+       39.695039
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S8",
+    "name": "Ourense / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149658",
+    "scene_id": "ENMAP01-____L2A-DT0000149658_20250819T121546Z_017_V010502_20250822T172007Z",
+    "datetime": "2025-08-19T12:15:46Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -5.988732,
+       43.001572
+      ],
+      [
+       -6.078004,
+       42.730148
+      ],
+      [
+       -5.72057,
+       42.679733
+      ],
+      [
+       -5.629843,
+       42.950924
+      ],
+      [
+       -5.988732,
+       43.001572
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S9",
+    "name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "scene_id": "ENMAP01-____L2A-DT0000149654_20250822T115322Z_001_V010502_20250823T180807Z",
+    "datetime": "2025-08-22T11:53:22Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.076391,
+       42.735154
+      ],
+      [
+       -6.165745,
+       42.460767
+      ],
+      [
+       -5.809644,
+       42.410532
+      ],
+      [
+       -5.718905,
+       42.684728
+      ],
+      [
+       -6.076391,
+       42.735154
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S9",
+    "name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "scene_id": "ENMAP01-____L2A-DT0000149654_20250822T115327Z_002_V010502_20250823T181827Z",
+    "datetime": "2025-08-22T11:53:27Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.164116,
+       42.465762
+      ],
+      [
+       -6.253254,
+       42.191676
+      ],
+      [
+       -5.898641,
+       42.141674
+      ],
+      [
+       -5.807989,
+       42.415523
+      ],
+      [
+       -6.164116,
+       42.465762
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S9",
+    "name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "scene_id": "ENMAP01-____L2A-DT0000149654_20250822T115331Z_003_V010502_20250823T192216Z",
+    "datetime": "2025-08-22T11:53:31Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.25164,
+       42.196674
+      ],
+      [
+       -6.339451,
+       41.921927
+      ],
+      [
+       -5.986307,
+       41.872114
+      ],
+      [
+       -5.897004,
+       42.14667
+      ],
+      [
+       -6.25164,
+       42.196674
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S9",
+    "name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "scene_id": "ENMAP01-____L2A-DT0000149654_20250822T115336Z_004_V010502_20250823T194101Z",
+    "datetime": "2025-08-22T11:53:36Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.337852,
+       41.926931
+      ],
+      [
+       -6.426045,
+       41.652757
+      ],
+      [
+       -6.074319,
+       41.603161
+      ],
+      [
+       -5.9847,
+       41.877116
+      ],
+      [
+       -6.337852,
+       41.926931
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S9",
+    "name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "scene_id": "ENMAP01-____L2A-DT0000149654_20250822T115340Z_005_V010502_20250823T194137Z",
+    "datetime": "2025-08-22T11:53:40Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -6.424443,
+       41.657749
+      ],
+      [
+       -6.510442,
+       41.385926
+      ],
+      [
+       -6.160108,
+       41.336534
+      ],
+      [
+       -6.072667,
+       41.608148
+      ],
+      [
+       -6.424443,
+       41.657749
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S9",
+    "name": "Leon / Zamora (record Aug-2025 fires)",
+    "country": "Spain",
+    "tier": 2,
+    "datatake": "DT0000149654",
+    "scene_id": "ENMAP01-____L2A-DT0000149654_20250822T115345Z_006_V010502_20250823T194157Z",
+    "datetime": "2025-08-22T11:53:45Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.578838,
+       -13.577193
+      ],
+      [
+       -62.638403,
+       -13.851607
+      ],
+      [
+       -62.364907,
+       -13.889745
+      ],
+      [
+       -62.305681,
+       -13.615273
+      ],
+      [
+       -62.578838,
+       -13.577193
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150204Z_001_V010502_20260508T160056Z",
+    "datetime": "2024-08-12T15:02:07.216533Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.637308,
+       -13.846558
+      ],
+      [
+       -62.69741,
+       -14.123779
+      ],
+      [
+       -62.42355,
+       -14.161964
+      ],
+      [
+       -62.363817,
+       -13.884695
+      ],
+      [
+       -62.637308,
+       -13.846558
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150209Z_002_V010502_20260508T160035Z",
+    "datetime": "2024-08-12T15:02:11.646893Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.696316,
+       -14.118725
+      ],
+      [
+       -62.7564,
+       -14.3961
+      ],
+      [
+       -62.482187,
+       -14.434321
+      ],
+      [
+       -62.422464,
+       -14.156909
+      ],
+      [
+       -62.696316,
+       -14.118725
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150213Z_003_V010502_20260508T161037Z",
+    "datetime": "2024-08-12T15:02:16.099000Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.755306,
+       -14.39105
+      ],
+      [
+       -62.815636,
+       -14.668149
+      ],
+      [
+       -62.54107,
+       -14.706425
+      ],
+      [
+       -62.481094,
+       -14.42927
+      ],
+      [
+       -62.755306,
+       -14.39105
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150218Z_004_V010502_20260508T161050Z",
+    "datetime": "2024-08-12T15:02:20.551111Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.81454,
+       -14.663096
+      ],
+      [
+       -62.874656,
+       -14.940672
+      ],
+      [
+       -62.59973,
+       -14.97897
+      ],
+      [
+       -62.539979,
+       -14.701372
+      ],
+      [
+       -62.81454,
+       -14.663096
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150222Z_005_V010502_20260508T162002Z",
+    "datetime": "2024-08-12T15:02:25.003201Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.873561,
+       -14.935616
+      ],
+      [
+       -62.934212,
+       -15.212557
+      ],
+      [
+       -62.658971,
+       -15.25091
+      ],
+      [
+       -62.598639,
+       -14.973913
+      ],
+      [
+       -62.873561,
+       -14.935616
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150227Z_006_V010502_20260508T161629Z",
+    "datetime": "2024-08-12T15:02:29.455292Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.933107,
+       -15.207516
+      ],
+      [
+       -62.993825,
+       -15.484524
+      ],
+      [
+       -62.71814,
+       -15.522942
+      ],
+      [
+       -62.657864,
+       -15.245869
+      ],
+      [
+       -62.933107,
+       -15.207516
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150231Z_007_V010502_20260508T161354Z",
+    "datetime": "2024-08-12T15:02:33.907396Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -62.992722,
+       -15.479473
+      ],
+      [
+       -63.053455,
+       -15.756467
+      ],
+      [
+       -62.777389,
+       -15.794943
+      ],
+      [
+       -62.717048,
+       -15.517891
+      ],
+      [
+       -62.992722,
+       -15.479473
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150236Z_008_V010502_20260508T161221Z",
+    "datetime": "2024-08-12T15:02:38.359506Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.052347,
+       -15.751429
+      ],
+      [
+       -63.113188,
+       -16.028429
+      ],
+      [
+       -62.836739,
+       -16.066963
+      ],
+      [
+       -62.776294,
+       -15.789902
+      ],
+      [
+       -63.052347,
+       -15.751429
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150240Z_009_V010502_20260508T162410Z",
+    "datetime": "2024-08-12T15:02:42.811604Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.112084,
+       -16.023377
+      ],
+      [
+       -63.172847,
+       -16.300641
+      ],
+      [
+       -62.895952,
+       -16.339224
+      ],
+      [
+       -62.835641,
+       -16.06191
+      ],
+      [
+       -63.112084,
+       -16.023377
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150244Z_010_V010502_20260508T163417Z",
+    "datetime": "2024-08-12T15:02:47.263704Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.171734,
+       -16.295602
+      ],
+      [
+       -63.232951,
+       -16.5723
+      ],
+      [
+       -62.955642,
+       -16.610953
+      ],
+      [
+       -62.894847,
+       -16.334184
+      ],
+      [
+       -63.171734,
+       -16.295602
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150249Z_011_V010502_20260508T163424Z",
+    "datetime": "2024-08-12T15:02:51.715808Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.231837,
+       -16.56725
+      ],
+      [
+       -63.292927,
+       -16.844508
+      ],
+      [
+       -63.015199,
+       -16.883201
+      ],
+      [
+       -62.954537,
+       -16.605902
+      ],
+      [
+       -63.231837,
+       -16.56725
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150253Z_012_V010502_20260508T163501Z",
+    "datetime": "2024-08-12T15:02:56.167905Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.29181,
+       -16.839466
+      ],
+      [
+       -63.353411,
+       -17.11582
+      ],
+      [
+       -63.075268,
+       -17.154606
+      ],
+      [
+       -63.014089,
+       -16.878157
+      ],
+      [
+       -63.29181,
+       -16.839466
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150258Z_013_V010502_20260508T163927Z",
+    "datetime": "2024-08-12T15:03:00.620003Z",
+    "cloud": "0",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.352289,
+       -17.110779
+      ],
+      [
+       -63.413581,
+       -17.388145
+      ],
+      [
+       -63.135024,
+       -17.426962
+      ],
+      [
+       -63.074155,
+       -17.149564
+      ],
+      [
+       -63.352289,
+       -17.110779
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150302Z_014_V010502_20260508T164043Z",
+    "datetime": "2024-08-12T15:03:05.072087Z",
+    "cloud": "9",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.412467,
+       -17.383088
+      ],
+      [
+       -63.473898,
+       -17.659878
+      ],
+      [
+       -63.194951,
+       -17.698764
+      ],
+      [
+       -63.133918,
+       -17.421906
+      ],
+      [
+       -63.412467,
+       -17.383088
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150307Z_015_V010502_20260508T164226Z",
+    "datetime": "2024-08-12T15:03:09.524165Z",
+    "cloud": "32",
+    "validated": "no",
+    "fire_px": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -63.472772,
+       -17.654842
+      ],
+      [
+       -63.533996,
+       -17.929144
+      ],
+      [
+       -63.254795,
+       -17.96806
+      ],
+      [
+       -63.193829,
+       -17.693727
+      ],
+      [
+       -63.472772,
+       -17.654842
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "site": "S10",
+    "name": "Chiquitania / Amazon fringe",
+    "country": "Bolivia",
+    "tier": 2,
+    "datatake": "DT0000088201",
+    "scene_id": "ENMAP01-____L2A-DT0000088201_20240812T150311Z_016_V010502_20260508T164317Z",
+    "datetime": "2024-08-12T15:03:13.954524Z",
+    "cloud": "45",
+    "validated": "no",
+    "fire_px": null
+   }
+  }
+ ]
+}

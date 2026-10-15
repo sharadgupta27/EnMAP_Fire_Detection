@@ -1,0 +1,57 @@
+# Conda environment for the EnMAP wildfire temperature retrieval.
+#
+#   conda env create -f environment.yml
+#   conda activate enmap-fire
+#
+# Then confirm LAPACK actually works before running anything:
+#
+#   python -c "import numpy as np; np.linalg.inv(np.eye(3)); print('LAPACK ok')"
+#
+# That check is not paranoia. A broken numpy/OpenBLAS linkage does not raise a
+# Python exception - it terminates the interpreter outright (on Windows, exit
+# code 0xC06D007F, no traceback), which takes down curve_fit(method='trf') and
+# therefore the entire temperature retrieval, every np.linalg.lstsq in
+# thermal_sharpening.py, and matplotlib's transform inversion. Because the
+# process is killed rather than raising, none of the try/except recovery paths
+# in estimate_temperature() get a chance to run.
+#
+# python is pinned to 3.11 and the BLAS provider is named explicitly for that
+# reason: the bleeding-edge 3.14 + numpy 2.5 conda-forge combination is where
+# this was observed to break.
+
+name: enmap-fire
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python=3.11
+
+  # --- numerics: pin the BLAS provider, not just numpy ---
+  - libblas=*=*openblas
+  - numpy=2.1.*
+  - scipy=1.14.*
+
+  # --- data handling ---
+  - pandas>=2.0
+  - joblib>=1.3          # parallel per-pixel retrieval (run_pipeline)
+  - tqdm>=4.65
+
+  # --- geospatial ---
+  - gdal>=3.8            # osgeo.gdal / osgeo.osr - EnMAP, Landsat, ECOSTRESS
+  - pyproj>=3.6          # VIIRS sinusoidal + SLSTR regridding
+  - h5py>=3.10           # VIIRS VNP21A1D/VJ121A1D granules
+  - netcdf4>=1.6         # Sentinel-3 SLSTR SL_2_LST
+
+  # --- plotting ---
+  - matplotlib-base>=3.8
+
+  # --- archive access ---
+  - requests>=2.31       # CMR, LandsatLook STAC, Copernicus Data Space
+
+  # --- GUI (optional: only Fire_analysis_with_EnMAP_GUI.py needs it) ---
+  - ttkbootstrap>=1.10
+
+  # --- development ---
+  - pyflakes             # the audit's static pass
