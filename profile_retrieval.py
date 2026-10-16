@@ -736,7 +736,8 @@ def _nan_result():
             'f_at_ci_low': np.nan, 'f_at_ci_high': np.nan, 'chi2_min': np.nan,
             'dof': 0, 'dof_eff': 0.0, 'reduced_chi2': np.nan, 'rho_lag1': np.nan,
             'n_eff': 0.0, 'n_bands': 0, 'n_bands_invalid': 0, 'n_bands_censored': 0,
-            'censor_violation': np.nan, 'n_params': 0, 'n_params_nominal': 0, 'n_active': 0, 'fire_lrt': np.nan,
+            'censor_violation': np.nan, 'censor_violation_z': np.nan,
+            'n_params': 0, 'n_params_nominal': 0, 'n_active': 0, 'fire_lrt': np.nan,
             'chi2_background_only': np.nan, 'rmse': np.nan, 'model': None,
             'abundances': None, 'sigma': None, 'n_local_minima': 0,
             'second_minimum_delta_chi2': np.nan, 'ci_possibly_disconnected': False,
@@ -1104,6 +1105,13 @@ def profile_retrieval(radiance, wavelength, background_endmembers, emissivity=1.
            'n_bands_censored': int(cens_f.sum()) if cens_f is not None else 0,
            'censor_violation': (float(np.max(np.maximum(lvl_f[cens_f] - model[cens_f], 0.0)
                                              / lvl_f[cens_f])) if cens_f is not None else 0.0),
+           # the same shortfall in units of the band's own standard deviation
+           # under (4'): the censor row is a finite penalty, and a fit that
+           # pays it rather than reach the ceiling is one the model cannot
+           # reconcile with the saturated band (run_profile_on_pixels marks
+           # it 'poor' above censor_violation_z_max)
+           'censor_violation_z': (float(np.max(np.maximum(lvl_f[cens_f] - model[cens_f], 0.0)
+                                               / _diag_sigma(cov)[cens_f])) if cens_f is not None else 0.0),
            'n_local_minima': int(n_local_minima),
            'second_minimum_delta_chi2': second_delta,
            'ci_possibly_disconnected': ci_disconnected,
@@ -1605,7 +1613,8 @@ def run_profile_on_pixels(fire_spectra, wavelength, pool, band_mask=None, n_endm
                           reference_radiance=None, corr_length_nm=150.0, nugget=0.2,
                           calibrate=True, emissivity=1.0, T_bounds=(300.0, 2000.0),
                           alpha=0.05, fire_points=None, valid_masks=None, censored_masks=None,
-                          censor_levels=None, poor_fit_reduced_chi2=5.0, libraries=None, rng=None,
+                          censor_levels=None, poor_fit_reduced_chi2=5.0, censor_violation_z_max=3.0,
+                          libraries=None, rng=None,
                           progress=None, device=None, method_label='ProfileML',
                           citation='this work (profile_retrieval.py)', **kwargs):
     """The profile-likelihood retrieval over every fire pixel of a scene.
@@ -1638,6 +1647,15 @@ def run_profile_on_pixels(fire_spectra, wavelength, pool, band_mask=None, n_endm
         its row is marked fit_quality='poor' (and a pixel with no retrieval
         at all 'failed') and should be excluded from
         aggregates, as T_at_bound rows already are.
+    censor_violation_z_max : a fit whose model lies more than this many
+        standard deviations (of (4') at that band) below the ceiling of one
+        of its censored bands is also 'poor'. The censor row is a finite
+        penalty (weighted_fcls), so a fit can pay it instead of reaching the
+        ceiling; under the Tobit likelihood such a shortfall has probability
+        < Phi(-3). On t014 one pixel otherwise labelled 'ok' sat 87% below
+        its ceiling, and its 95% upper limit (528 K) lay below the model-free
+        hottest-component bound of its own saturated band (603 K,
+        saturation_bounds.py) - VERIFICATION.md S33.
     Returns a pandas.DataFrame with the run_methods_on_pixels() schema plus
     the profile-likelihood diagnostics (T_ci_low, T_ci_high, T_upper_unbounded, ...).
     """
@@ -1752,10 +1770,13 @@ def run_profile_on_pixels(fire_spectra, wavelength, pool, band_mask=None, n_endm
                      # 'failed': no retrieval (reduced chi2 NaN - which the bare
                      # comparison with the threshold used to label 'ok')
                      'fit_quality': ('failed' if not (best['converged'] and np.isfinite(best['reduced_chi2']))
-                                     else 'poor' if best['reduced_chi2'] > poor_fit_reduced_chi2 else 'ok'),
+                                     else 'poor' if (best['reduced_chi2'] > poor_fit_reduced_chi2
+                                                     or best.get('censor_violation_z', 0.0) > censor_violation_z_max)
+                                     else 'ok'),
                      'n_bands_invalid': best['n_bands_invalid'],
                      'n_bands_censored': best.get('n_bands_censored', 0),
                      'censor_violation': best.get('censor_violation', np.nan),
+                     'censor_violation_z': best.get('censor_violation_z', np.nan),
                      'rmse_rel': best['rmse'] / max(float(np.mean(np.abs(y))), 1e-300),
                      'irls_passes': best.get('irls_passes', 0),
                      'irls_converged': best.get('irls_converged')})
@@ -1765,7 +1786,7 @@ def run_profile_on_pixels(fire_spectra, wavelength, pool, band_mask=None, n_endm
             'dof', 'dof_eff', 'rho_lag1',
             'fire_lrt', 'n_local_minima', 'ci_possibly_disconnected', 'closure_error',
             'eps_model_error', 'fit_quality', 'n_bands_invalid', 'n_bands_censored', 'censor_violation',
-            'rmse_rel', 'irls_passes', 'irls_converged']
+            'censor_violation_z', 'rmse_rel', 'irls_passes', 'irls_converged']
     df = pd.DataFrame(rows, columns=cols) if rows else pd.DataFrame(columns=cols)
     df.attrs['calibration_table'] = calib_table
     df.attrs['eps_model_error'] = eps

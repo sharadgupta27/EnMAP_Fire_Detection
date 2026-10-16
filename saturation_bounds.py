@@ -50,7 +50,6 @@ import numpy as np
 
 SIGMA_SB = 5.670374419e-8
 _H, _C, _KB = 6.62607015e-34, 2.99792458e8, 1.380649e-23
-_T_GRID = np.exp(np.linspace(np.log(150.0), np.log(6000.0), 4000))
 
 
 def planck_nm(wavelength_nm, T):
@@ -71,19 +70,27 @@ def brightness_temperature_nm(wavelength_nm, radiance):
     return np.where(np.asarray(radiance) > 0, T, np.nan)
 
 
+# x* = c2 / (lambda T*), the unique positive root of 4 (1 - e^-x) = x:
+# x* = 4 + W0(-4 e^-4) (Lambert W). d/dT ln(T^4 / B) = e^x g(x) / (T (e^x - 1))
+# with g(x) = 4 (1 - e^-x) - x, g > 0 below x* and < 0 above, so sigma T^4 / B
+# falls for T < T* and rises above it (proved exactly in
+# algorithm_verification/math_proofs/proofs.sage, checks G1-G6).
+X_STAR = 3.920690394872886343560891
+
+
 def frp_per_radiance_minimum(wavelength_nm):
     """R(lambda) = min over T of sigma T^4 / B(lambda, T)  [W m-2 per
-    W m-2 sr-1 nm-1, i.e. sr nm], and the minimising T. Evaluated on a fine
-    log grid 150-6000 K (the minimum lies well inside for SWIR wavelengths;
-    it is checked)."""
+    W m-2 sr-1 nm-1, i.e. sr nm], and the minimising T, in closed form:
+
+        T*(lambda) = c2 / (x* lambda),
+        R(lambda)  = sigma T*^4 / B(lambda, T*) = lambda sigma c2^4 (e^x* - 1) / (c1 x*^4)
+
+    (an earlier version took the minimum over a 4000-point grid, which can
+    only over-state R - by at most 4e-7 relative over 1300-2450 nm - and so
+    the bound by as much)."""
     w = np.atleast_1d(np.asarray(wavelength_nm, float))
-    B = planck_nm(w[:, None], _T_GRID[None, :])
-    with np.errstate(divide='ignore'):
-        ratio = SIGMA_SB * _T_GRID[None, :] ** 4 / B
-    k = np.argmin(ratio, axis=1)
-    if np.any((k == 0) | (k == len(_T_GRID) - 1)):
-        raise ValueError('minimum of sigma T^4 / B at the edge of the temperature grid')
-    return ratio[np.arange(len(w)), k], _T_GRID[k]
+    T_star = _H * _C / (_KB * X_STAR * w * 1e-9)
+    return SIGMA_SB * T_star ** 4 / planck_nm(w, T_star), T_star
 
 
 def saturated_pixel_bounds(wavelength_nm, censored, censor_level, background_max, pixel_area_m2=900.0):
@@ -128,8 +135,13 @@ def saturated_pixel_bounds(wavelength_nm, censored, censor_level, background_max
 #
 # with e_k = c_k - L_bkg,k^max (censored bands) or y_k - z sigma_k -
 # L_bkg,k^max (linear, unflagged bands: their recorded radiance, less z
-# noise standard deviations, is also a lower bound on the at-sensor
-# radiance; tau_k <= 1 and eps <= 1 enter as in FRP_min). The single-band
+# noise standard deviations, is a lower bound on the at-sensor radiance
+# with probability Phi(z) under Gaussian noise; tau_k <= 1 and eps <= 1
+# enter as in FRP_min). The censored constraints hold with certainty; for
+# the n linear ones z = max(3, Phi^-1(1 - LP_FAMILY_ALPHA / n)) (Bonferroni),
+# so all of them hold at once - and the bound with them - with probability
+# at least 1 - LP_FAMILY_ALPHA. (A fixed z = 3 gave a per-band level only:
+# with 70 linear bands the union bound guaranteed just 0.91.) The single-band
 # bound is this programme with one constraint, so the joint bound is never
 # lower. Discretisation, made rigorous: T on a grid uniform in 1/T over
 # [LP_T_MIN, LP_T_MAX]; a component between two nodes is replaced by the
@@ -143,7 +155,8 @@ def saturated_pixel_bounds(wavelength_nm, censored, censor_level, background_max
 # LP_MIN_WAVELENGTH_NM are used for that reason.
 LP_T_MIN, LP_T_MAX, LP_N_T = 300.0, 3000.0, 800
 LP_MIN_WAVELENGTH_NM = 1300.0
-LP_NOISE_Z = 3.0
+LP_NOISE_Z = 3.0              # floor of the per-band z of the linear constraints
+LP_FAMILY_ALPHA = 0.01        # P(some linear constraint is wrong) <= this (Bonferroni)
 LINEAR_DN_FRACTION = 0.85     # above: detector compression (VERIFICATION.md S24.2); not a usable value
 _LP_T = 1.0 / np.linspace(1.0 / LP_T_MIN, 1.0 / LP_T_MAX, LP_N_T)
 LP_KAPPA = float(np.max((_LP_T[1:] / _LP_T[:-1]) ** 4))
@@ -201,10 +214,13 @@ def bounds_for_pixels(wavelength_nm, censored, censor_levels, libraries, pool, p
             c = np.asarray(censored[i], bool)
             e = np.where(c, np.asarray(censor_levels[i], float) - bmax, np.nan)
             if usable is not None:
+                from scipy.stats import norm
                 u = np.asarray(usable[i], bool) & ~c
                 sg = 0.0 if noise_sigma is None else np.asarray(noise_sigma)[i] if np.ndim(noise_sigma) == 2 \
                     else np.asarray(noise_sigma)
-                e = np.where(u, np.asarray(radiance[i], float) - LP_NOISE_Z * np.nan_to_num(sg) - bmax, e)
+                n_lin = int(np.sum(u & (np.asarray(wavelength_nm, float) >= LP_MIN_WAVELENGTH_NM)))
+                z = max(LP_NOISE_Z, float(norm.isf(LP_FAMILY_ALPHA / max(n_lin, 1))))
+                e = np.where(u, np.asarray(radiance[i], float) - z * np.nan_to_num(sg) - bmax, e)
             fj, nj = joint_frp_bound(wavelength_nm, e, pixel_area_m2)
             # both are valid bounds; the single-band one may use a band < 1300 nm
             row['FRP_min_joint_MW'] = float(np.nanmax([fj, row['FRP_min_MW']])) \

@@ -312,7 +312,8 @@ def _save(fig, fig_dir, name):
     os.makedirs(fig_dir, exist_ok=True)
     png = os.path.join(fig_dir, name + '.png')
     fig.savefig(png, dpi=300)
-    fig.savefig(os.path.join(fig_dir, name + '.pdf'))       # vector copy for the manuscript
+    # no creation date in the vector copy, so a rerun gives the same file
+    fig.savefig(os.path.join(fig_dir, name + '.pdf'), metadata={'CreationDate': None})
     plt.close(fig)
     return png
 
@@ -1525,13 +1526,18 @@ def build_scene_report(results_dir, scene_id=None, output_path=None, verbose=Tru
     # Image streams binary (Flate) rather than ASCII85-wrapped: without the
     # optional C accelerator reportlab encodes ASCII85 in pure Python, ~8 s
     # per report; the PDF content is the same and the file smaller.
+    # invariant mode: fixed creation date and document ID, so the same run
+    # inputs give a byte-identical report (the run date printed in the text
+    # still changes from day to day)
     from reportlab import rl_config
-    _a85 = rl_config.useA85
+    _a85, _inv = rl_config.useA85, rl_config.invariant
     rl_config.useA85 = 0
+    rl_config.invariant = 1
     try:
         doc.build(story, onFirstPage=_page, onLaterPages=_page)
     finally:
         rl_config.useA85 = _a85
+        rl_config.invariant = _inv
     # machine-readable copy of the tables
     rows = []
     for k, s in stats.items():

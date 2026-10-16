@@ -64,7 +64,7 @@ DEFAULT_N_SCENE = 20      # scene-wide spectra per library
 
 def build_libraries(cube, wavelength, fire_points, background_mask, bkg_pool, n_draws=5,
                     n_endmembers=None, half_window=5, rng=None, n_local_max=DEFAULT_N_LOCAL,
-                    n_scene=DEFAULT_N_SCENE):
+                    n_scene=DEFAULT_N_SCENE, selection='systematic'):
     """Per-pixel background libraries: `n_draws` arrays of full-band spectra,
     up to `n_local_max` from the pixel's own 11x11 neighbourhood
     (background-mask pixels only) plus `n_scene` scene-wide ones; scene-wide
@@ -80,9 +80,22 @@ def build_libraries(cube, wavelength, fire_points, background_mask, bkg_pool, n_
     to 12 K with 40 local + 20 scene spectra, at 94% single-library
     coverage; larger libraries gain nothing further and cost five times the
     runtime. `n_endmembers`, if given, is the legacy total (split half/half).
+
+    `selection` says how the subsets are taken. 'systematic' (default) has
+    no random element (sampling.py): draw k takes the neighbours at evenly
+    spaced positions of their raster order, offset by the k-th Weyl phase,
+    and the scene part is a systematic sample of the (raster-ordered) pool
+    with a phase keyed on the pixel's raster index and k, so a pixel's
+    libraries are a fixed function of the scene and of the pixel's
+    position. 'random' is the earlier seeded draw from `rng`, kept to
+    reproduce earlier runs.
     Returns (libraries, n_local_per_pixel)."""
     import temperature_methods as tm
+    import sampling as smp
+    if selection not in ('systematic', 'random'):
+        raise ValueError(f"selection must be 'systematic' or 'random', got {selection!r}")
     rng = rng if rng is not None else np.random.default_rng(0)
+    n_cols = np.asarray(cube).shape[2] if np.ndim(cube) == 3 else 1
     if n_endmembers is not None:
         n_local_max = int(n_endmembers) // 2; n_scene = int(n_endmembers) - n_local_max
     exclude = ~np.asarray(background_mask, dtype=bool)
@@ -98,7 +111,20 @@ def build_libraries(cube, wavelength, fire_points, background_mask, bkg_pool, n_
         n_loc = 0 if local is None or len(local) < 10 else len(local)
         n_local.append(n_loc)
         draws = []
-        for _ in range(max(int(n_draws), 1)):
+        key = int(r_) * n_cols + int(c_)
+        for k in range(max(int(n_draws), 1)):
+            if selection == 'systematic':
+                n_pool = bkg_pool.shape[0]
+                ph_s = smp.weyl_phase(key * max(int(n_draws), 1) + k + 1)
+                if n_loc:
+                    loc_part = local[smp.systematic_indices(n_loc, min(n_local_max, n_loc), smp.weyl_phase(k))]
+                    scene_part = np.asarray(bkg_pool[smp.systematic_indices(n_pool, min(n_scene, n_pool), ph_s)],
+                                            dtype=float)
+                    draws.append(np.vstack([loc_part, scene_part]))
+                else:
+                    draws.append(np.asarray(bkg_pool[smp.systematic_indices(n_pool, min(n_scene + n_local_max, n_pool),
+                                                                            ph_s)], dtype=float))
+                continue
             if n_loc:
                 loc_part = local[rng.choice(n_loc, size=min(n_local_max, n_loc), replace=False)]
                 scene_part = np.asarray(bkg_pool[rng.choice(bkg_pool.shape[0], size=min(n_scene, bkg_pool.shape[0]),
@@ -123,7 +149,8 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
                          native_results=None, save_results=True, generate_figures=True,
                          figure_dpi=300, snr=DEFAULT_SNR, n_draws=5, n_rounds=8, progress=None,
                          verbose=True, n_tau_draws=2, use_template_prior=False, device=None,
-                         variant='v1', kernel_method='autocorrelation', scene_estimates=None):
+                         variant='v1', kernel_method='autocorrelation', scene_estimates=None,
+                         sampling='systematic', quality=None):
     """Run this work's chain over `fire_points`. Returns a dict with keys
     df (the ProfileML results frame), tau (full-band array, NaN outside the
     fit window), tau_applied (bool), quality (enmap_quality dict), kernel,
@@ -171,6 +198,20 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
     pr.estimate_model_error_kernel(max_reduced_chi2=)). Every pixel is still
     retrieved and reported.
 
+    `sampling`: 'systematic' (default) - every subset of the stage (the
+    background libraries, the halves of the split-half transmittance draws,
+    the noise sample of the saturation bounds) is a fixed function of the
+    data (sampling.py), so the stage has no seed and repeated runs on the
+    same scene give the same numbers bit for bit; 'random' - the earlier
+    draws from cfg['random_seed'], kept to reproduce runs before
+    15 Oct 2026 and for the seed-sensitivity comparison (VERIFICATION.md S34).
+
+    `quality`: a per-pixel band-quality dict in the form of
+    enmap_quality.load_pixel_quality() (valid, censored, censor_level, and
+    optionally dn / flag / available) to use instead of reading the EnMAP
+    product files - for another sensor, e.g. EMIT's interpolated
+    (saturated) channels from its L2A band mask.
+
     v2 writes its own files (..._ProfileMLv2_...)."""
     import time as _time
     from profile_batch import resolve_device
@@ -181,6 +222,8 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
         raise ValueError(f"kernel_method must be 'autocorrelation' or 'reml', got {kernel_method!r}")
     if scene_estimates is None:
         scene_estimates = 'adequate' if variant == 'v2' else 'all'
+    if sampling not in ('systematic', 'random'):
+        raise ValueError(f"sampling must be 'systematic' or 'random', got {sampling!r}")
     if scene_estimates not in ('all', 'adequate'):
         raise ValueError(f"scene_estimates must be 'all' or 'adequate', got {scene_estimates!r}")
     gate = scene_estimates == 'adequate'
@@ -235,8 +278,8 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
         T_bounds = (300.0, T_bounds[1])
 
     # ---- 1. quality masks --------------------------------------------------
-    q = eq.load_pixel_quality(enmap_radiance_path, fire_points, n_bands_expected=len(wavelength),
-                              verbose=verbose)
+    q = quality if quality is not None else eq.load_pixel_quality(
+        enmap_radiance_path, fire_points, n_bands_expected=len(wavelength), verbose=verbose)
     out['quality'] = q
     _step('quality masks')
     pk = [dict(valid_mask=q['valid'][i][band_mask], censored_mask=q['censored'][i][band_mask],
@@ -245,7 +288,7 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
     # ---- 2. libraries -------------------------------------------------------
     rng = np.random.default_rng(int(cfg.get('random_seed', 0)))
     libs_full, n_local = build_libraries(cube, wavelength, fire_points, background_mask, pool_m,
-                                         n_draws=n_draws, rng=rng)
+                                         n_draws=n_draws, rng=rng, selection=sampling)
     if verbose:
         print(f'  This work: libraries built ({int((n_local > 0).sum())}/{n_pix} pixels with a usable '
               f'11x11 neighbourhood; the rest scene-wide only)')
@@ -298,6 +341,7 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
             if n_tau_draws > 0 and n_pix >= 6:
                 try:
                     sh = ft.split_half_validation(fire, w, libs_first, rng=np.random.default_rng(1), n_rounds=max(n_rounds // 2, 2),
+                                                  split='interleaved' if sampling == 'systematic' else 'random',
                                                   per_pixel_kwargs=pk, estimator_kwargs=est_kw, device=device,
                                                   round0_retrievals=est.get('retrievals_round0'), **base)
                     out['tau_halves'] = [sh['tau_A'], sh['tau_B']][:n_tau_draws]
@@ -386,9 +430,13 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
         if q.get('available', True) and np.asarray(q['censored']).any():
             # the joint (LP) bound also uses the linear, unflagged bands, less
             # 3 noise sigma (per-band HySime noise of a background sample)
-            _rs = np.random.default_rng(7)
-            _ps = np.asarray(pool_m[np.sort(_rs.choice(pool_m.shape[0], size=min(5000, pool_m.shape[0]),
-                                                       replace=False))], dtype=float)
+            if sampling == 'systematic':
+                from sampling import systematic_indices as _sysidx
+                _ps = np.asarray(pool_m[_sysidx(pool_m.shape[0], min(5000, pool_m.shape[0]))], dtype=float)
+            else:
+                _rs = np.random.default_rng(7)
+                _ps = np.asarray(pool_m[np.sort(_rs.choice(pool_m.shape[0], size=min(5000, pool_m.shape[0]),
+                                                           replace=False))], dtype=float)
             _pos = np.all(_ps > 0, axis=0) & np.all(np.isfinite(_ps), axis=0)
             _sig = np.zeros(len(wavelength))
             _sig[_pos] = pr.estimate_band_noise(_ps[:, _pos])

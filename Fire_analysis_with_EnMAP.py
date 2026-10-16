@@ -5412,7 +5412,8 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
                   generate_report=True,
                   fire_partner_sources=(), fire_partner_files=(), firms_map_key=None,
                   fire_partner_window_hours=3.0, method_uncertainty=True, n_monte_carlo=100,
-                  dennison_transmittance='template', coregister=False, coreg_max_days=20):
+                  dennison_transmittance='template', coregister=False, coreg_max_days=20,
+                  sampling='systematic'):
     """Run the full EnMAP fire-temperature pipeline end to end.
 
     Co-registration (coregistration.py): with coregister=True, stage 3 first
@@ -5551,6 +5552,16 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
     and its agreement with the joint fit bounds how much the nonlinear
     search is contributing. Adds runtime roughly proportional to the number
     of fire pixels, so it is off by default.
+
+    sampling: 'systematic' (default since 15 Oct 2026) - this work's
+    detector and retrieval take every subset (training pool, template
+    sample, background libraries, split halves) as a fixed function of the
+    scene (sampling.py), so they have no seed and a rerun on the same scene
+    reproduces them bit for bit; 'random' - the earlier seeded draws
+    (config['random_seed'] for the libraries, seed 0 for the detector), to
+    reproduce runs before that date. The published methods keep their own
+    random elements (Amici et al. random starts, Dennison et al. k-means,
+    Monte Carlo uncertainty), seeded from config['random_seed'].
 
     profile_ml_variant selects this work's PRIMARY method, the one stages 5-8,
     the validation, the preview map and the report compare against: 'v2'
@@ -5757,7 +5768,8 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
             cube, wavelength, band_mask, hotspot_index=hotspot_index,
             swir_radiance=swir_radiance if swir_radiance is not None else swir_radiance_magnitude(cube, wavelength, hotspot_wl_lo, hotspot_wl_hi),
             p_fa=detection_p_fa, margin_px=hotspot_margin_px, raster_path=enmap_radiance_path,
-            bootstrap_k=detection_k, verbose=True)
+            bootstrap_k=detection_k, verbose=True, sampling=sampling,
+            rng=np.random.default_rng(int(cfg.get('random_seed', 0))))
         threshold_used = float(detection_info['threshold'])
         if hotspot_min_cluster_size > 1 and len(fire_points):
             fm = np.zeros(hotspot_index.shape, bool); fm[fire_points[:, 0], fire_points[:, 1]] = True
@@ -6012,7 +6024,7 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
                 results_dir, scene_id, today, native_results=None,
                 save_results=save_results, generate_figures=False, figure_dpi=figure_dpi,
                 progress=lambda key, i, n: report(i, n, PROGRESS_LABEL_PROFILE),
-                device=profile_device, variant=profile_ml_variant)
+                device=profile_device, variant=profile_ml_variant, sampling=sampling)
             if profile_ml is not None and profile_ml.get('tau_applied'):
                 from profile_retrieval import column_median as _pr_cm
                 _tau_fit = profile_ml['tau'][band_mask]
@@ -6041,7 +6053,7 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
                 results_dir, scene_id, today, native_results=None,
                 save_results=save_results, generate_figures=False, figure_dpi=figure_dpi,
                 progress=lambda key, i, n: report(i, n, PROGRESS_LABEL_PROFILE),
-                device=profile_device, variant=_alt_variant)
+                device=profile_device, variant=_alt_variant, sampling=sampling)
         except PipelineCancelled:
             raise
         except Exception as exc:
@@ -6757,6 +6769,12 @@ def main():
                         help='Search window for the HLS reference, days either side (default 20).')
     parser.add_argument('--no-report', dest='generate_report', action='store_false',
                         help="Don't typeset the scene's PDF report (Report_<scene>.pdf, scene_report.py).")
+    parser.add_argument('--sampling', dest='sampling', choices=('systematic', 'random'), default='systematic',
+                        help="How this work's detector and retrieval take subsets: systematic (default; no "
+                             'seed, bit-reproducible) or random (the seeded draws used before 15 Oct 2026).')
+    parser.add_argument('--seed', dest='random_seed', type=int, default=None,
+                        help="Base seed of the random elements that remain (published methods' random starts "
+                             'and k-means, Monte Carlo uncertainty, and --sampling random). Default 0.')
     parser.add_argument('--profile-ml-variant', dest='profile_ml_variant', choices=('v1', 'v2'), default='v2',
                         help="This work's primary method: v2 (default; VERIFICATION.md S22-S23) or the "
                              'legacy v1 as first published.')
@@ -6823,7 +6841,9 @@ def main():
                  amici_analytic_jacobian=args.amici_analytic_jacobian,
                  method_uncertainty=args.method_uncertainty, n_monte_carlo=args.n_monte_carlo,
                  dennison_transmittance=args.dennison_transmittance,
-                 coregister=args.coregister, coreg_max_days=args.coreg_max_days)
+                 coregister=args.coregister, coreg_max_days=args.coreg_max_days,
+                 sampling=args.sampling,
+                 config=None if args.random_seed is None else {'random_seed': args.random_seed})
 
 
 if __name__ == '__main__':

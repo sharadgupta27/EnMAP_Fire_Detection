@@ -59,21 +59,48 @@ except ImportError:                      # pragma: no cover - standalone use
 DEFAULT_T_GRID = (500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1200.0, 1500.0)
 
 
+def _whitened_mean_cov(X, scale, chunk=65536):
+    """Mean and covariance of X * scale over all rows, in two chunked passes
+    (float64 accumulators; X stays in its own dtype)."""
+    n, p = X.shape
+    s = np.zeros(p)
+    for i in range(0, n, chunk):
+        s += (np.asarray(X[i:i + chunk], float) * scale).sum(axis=0)
+    mu = s / n
+    C = np.zeros((p, p))
+    for i in range(0, n, chunk):
+        Z = np.asarray(X[i:i + chunk], float) * scale - mu
+        C += Z.T @ Z
+    return mu, C / max(n - 1, 1)
+
+
 class FireGLRT:
     """The detector for one scene: learn the background subspace and the null
     from a fire-free pool, then score any set of spectra or a whole cube."""
 
     def __init__(self, wavelength, pool, tau=None, K=12, snr=150.0, rel_model_error=0.05,
                  T_grid=DEFAULT_T_GRID, adequacy_quantile=0.999, n_fit=8000, rng=None,
-                 ceiling=None, ceiling_fraction=0.75, tau_prior_scale=0.5, pool_rc=None):
+                 ceiling=None, ceiling_fraction=0.75, tau_prior_scale=0.5, pool_rc=None,
+                 sampling='random', pool_trim=None):
         self.w = np.asarray(wavelength, float)
         pool = np.asarray(pool)
         keep = np.all(np.isfinite(pool), axis=1) & np.all(pool > 0, axis=1)
-        pool = np.asarray(pool[keep], dtype=float)
+        # n_fit=None: the WHOLE pool trains the subspace and sets the adequacy
+        # gate and the pool null (no subset is chosen at all); the pool stays
+        # in its own dtype and the statistics are accumulated in chunks, so a
+        # whole-scene pool (~10^6 spectra) fits in memory
+        whole = n_fit is None
+        self.whole_pool = whole
+        pool = pool[keep] if whole else np.asarray(pool[keep], dtype=float)
         self.pool_rc = None if pool_rc is None else np.asarray(pool_rc)[keep]
+        # sampling: 'random' (subsets drawn from rng) or 'systematic' (evenly
+        # spaced in the pool's order, sampling.py; no random element)
+        if sampling not in ('random', 'systematic'):
+            raise ValueError(f"sampling must be 'random' or 'systematic', got {sampling!r}")
+        self.sampling = sampling
         self.rng = rng if rng is not None else np.random.default_rng(0)
         self.snr = float(snr); self.eps = float(rel_model_error)
-        self.ref = np.median(pool, axis=0)
+        self.ref = np.median(pool, axis=0).astype(float)
         self.sig_ref = self.ref / self.snr
         # scene-level whitening for the projection (a fixed metric keeps the
         # statistic a single matrix product per temperature)
@@ -91,7 +118,12 @@ class FireGLRT:
             # strong fire pixel.
             try:
                 from fire_transmittance import background_absorption_template, template_scale_factors
-                tpl = background_absorption_template(pool, self.w, rng=self.rng)
+                if whole:
+                    from sampling import systematic_indices
+                    _tp = pool[systematic_indices(len(pool), min(3000, len(pool)))]
+                    tpl = background_absorption_template(_tp, self.w, rng=self.rng, sampling='systematic')
+                else:
+                    tpl = background_absorption_template(pool, self.w, rng=self.rng, sampling=sampling)
                 region = np.any(list(tpl['region_masks'].values()), axis=0)
                 tau = np.where(region, np.exp(-float(tau_prior_scale) * tpl['template']), 1.0)
                 self.tau_source = f'background template, scale {tau_prior_scale}'
@@ -108,25 +140,59 @@ class FireGLRT:
         # tried first and is unstable on a scene with rare bright classes:
         # whether those classes are spanned depends on the draw, and the
         # detection count varied by a factor of ten between seeds.
-        Xw = pool * self.Wt
-        self.mu = Xw.mean(axis=0)
-        C = np.cov(Xw - self.mu, rowvar=False)
+        if whole:
+            self.mu, C = _whitened_mean_cov(pool, self.Wt)
+            # pool_trim (whole pool only): a robust subspace - the pool pixels
+            # whose whitened residual outside the subspace lies above the
+            # (1 - pool_trim) quantile (rare bright classes, smoke, missed weak
+            # fires) are left out and the mean and covariance refitted, twice.
+            # A rule on the data, not a draw: the same pixels go every time.
+            self.pool_trim = pool_trim
+            if pool_trim:
+                for _ in range(2):
+                    ev, evec = np.linalg.eigh(C)
+                    V0 = evec[:, np.argsort(ev)[::-1][:int(K)]]
+                    r2 = np.concatenate([np.sum(((np.asarray(pool[i:i + 65536], float) * self.Wt - self.mu)
+                                                 - ((np.asarray(pool[i:i + 65536], float) * self.Wt - self.mu) @ V0)
+                                                 @ V0.T) ** 2, axis=1)
+                                         for i in range(0, len(pool), 65536)])
+                    keep_t = r2 <= np.quantile(r2, 1.0 - float(pool_trim))
+                    self.mu, C = _whitened_mean_cov(pool[keep_t], self.Wt)
+                self.n_trimmed = int((~keep_t).sum())
+        else:
+            Xw = pool * self.Wt
+            self.mu = Xw.mean(axis=0)
+            C = np.cov(Xw - self.mu, rowvar=False)
         evals, evecs = np.linalg.eigh(C)
         order = np.argsort(evals)[::-1]; evals, evecs = np.maximum(evals[order], 0), evecs[:, order]
         self.V = evecs[:, :self.K]
         self.explained = float(evals[:self.K].sum() / max(evals.sum(), 1e-300))
-        fit_idx = self.rng.choice(len(pool), size=min(n_fit, len(pool)), replace=False)
+        if whole:
+            fit_idx = np.zeros(0, dtype=np.int64)
+        elif sampling == 'systematic':
+            from sampling import systematic_indices
+            fit_idx = systematic_indices(len(pool), min(n_fit, len(pool)))
+        else:
+            fit_idx = self.rng.choice(len(pool), size=min(n_fit, len(pool)), replace=False)
         # whitened, projected Planck directions
         self.pb = []
+        self.planck_retained = []      # ||P_perp b_T|| / ||b_T||: 1 = the subspace spans no fire signal
         for T in self.T_grid:
             b = _planck_nm(self.w, T) * self.tau * self.Wt
             pb = b - self.V @ (self.V.T @ b)
+            self.planck_retained.append(float(np.linalg.norm(pb) / np.linalg.norm(b)))
             self.pb.append(pb / np.linalg.norm(pb))
         self.pb = np.array(self.pb)                       # (nT, n_bands)
         # null and adequacy from the held-out part of the pool
-        held = np.setdiff1d(np.arange(len(pool)), fit_idx)
-        held = held if len(held) >= 2000 else np.arange(len(pool))
-        lam0, chi0, _ = self.score(pool[held])
+        if whole:
+            held = np.arange(len(pool))
+            parts = [self.score(pool[i:i + 65536]) + (self._last_chi_before,) for i in range(0, len(pool), 65536)]
+            lam0 = np.concatenate([x[0] for x in parts]); chi0 = np.concatenate([x[1] for x in parts])
+            self._last_chi_before = np.concatenate([x[3] for x in parts])
+        else:
+            held = np.setdiff1d(np.arange(len(pool)), fit_idx)
+            held = held if len(held) >= 2000 else np.arange(len(pool))
+            lam0, chi0, _ = self.score(pool[held])
         self.adequacy_quantile = float(adequacy_quantile)
         self.chi_gate = float(np.nanquantile(chi0, self.adequacy_quantile))
         ok0 = chi0 <= self.chi_gate
@@ -352,7 +418,9 @@ def hotspot_index(spectra_full, wavelength_full, wl_lo=2060.0, wl_hi=2430.0):
 
 def detect_fire_pixels_glrt(cube, wavelength, band_mask, hotspot_index=None, swir_radiance=None,
                             p_fa=1e-5, margin_px=5, K=12, n_pool=60000, raster_path=None,
-                            include_candidates=True, bootstrap_k=6.0, rng=None, verbose=True):
+                            include_candidates=True, bootstrap_k=6.0, rng=None, verbose=True,
+                            sampling='systematic', ceiling=None, pool_trim=None, pool_passes=1,
+                            clean_p_fa=1e-3):
     """Scene-wide fire detection for run_pipeline(): the GLRT of FireGLRT on
     every pixel of the fit window, calibrated on the scene itself.
 
@@ -370,6 +438,27 @@ def detect_fire_pixels_glrt(cube, wavelength, band_mask, hotspot_index=None, swi
     background_mask excludes both classes and a margin of `margin_px`. info
     carries the detector, the maps (lam, chi, ratio, T_best), the per-point
     class and statistic, the threshold and the null description.
+
+    `sampling`: 'systematic' (default) takes the `n_pool` training pixels
+    evenly spaced through the bootstrap background in raster order, and
+    every later subset the same way (sampling.py), so detection has no
+    seed; 'random' is the earlier draw from `rng` (default seed 0), kept to
+    reproduce runs before 15 Oct 2026 (VERIFICATION.md S34).
+
+    `ceiling` (full band axis): per-band radiance ceiling to use instead of
+    the EnMAP metadata's (another sensor); bands above
+    ceiling_fraction * ceiling are left out of the adequacy statistic.
+    `pool_passes` > 1: a self-consistent fire-free pool. The bootstrap
+    background of a burning scene still holds smouldering and weakly burning
+    pixels; in the covariance they make the background subspace span part of
+    the Planck directions, which then projects real fire signal away (lower
+    sensitivity, and a detection count that depends on how many such pixels a
+    training subset happens to contain). After each pass, every pixel above
+    the scene null's (1 - clean_p_fa) quantile or classed fire / candidate,
+    with a margin of `margin_px`, leaves the pool, and the detector is
+    retrained; the passes stop when the pool no longer changes (<0.1 %).
+    `det.planck_retained` reports how much of a Planck spectrum survives the
+    projection, per grid temperature.
     """
     from Fire_analysis_with_EnMAP import (compute_hotspot_index, swir_radiance_magnitude,
                                           robust_background_threshold, detect_fire_pixels)
@@ -386,24 +475,60 @@ def detect_fire_pixels_glrt(cube, wavelength, band_mask, hotspot_index=None, swi
     _, boot_bkg, _ = detect_fire_pixels(hotspot_index, method='robust', k=bootstrap_k,
                                         margin_px=margin_px, swir_radiance=swir_radiance,
                                         radiance_threshold=robust_background_threshold(swir_radiance, k=bootstrap_k))
-    rows, cols = np.where(boot_bkg)
-    sel = rng.choice(len(rows), size=min(n_pool, len(rows)), replace=False)
-    pool = cube[rows[sel], :, cols[sel]].astype(float)[:, m]
-    pool_rc = np.column_stack([rows[sel], cols[sel]])
-    ceiling = None
-    if raster_path is not None:
-        try:
-            import enmap_quality as eq
-            files = eq.find_quality_files(raster_path)
-            if files.get('metadata'):
-                ceiling = np.asarray(eq.band_ceilings_from_metadata(files['metadata'])[0], float)[m]
-        except Exception as exc:                          # pragma: no cover
-            if verbose:
-                print(f'  detector: band ceilings unavailable ({exc.__class__.__name__}: {exc})')
-    det = FireGLRT(w, pool, K=K, ceiling=ceiling, pool_rc=pool_rc, rng=rng)
-    window = np.ascontiguousarray(np.transpose(cube[:, m, :], (0, 2, 1)))
-    out = det.detect_cube(window, p_fa=p_fa)
-    del window
+    pool_bkg = boot_bkg
+    for _pass in range(max(int(pool_passes), 1)):
+        rows, cols = np.where(pool_bkg)
+        if n_pool is None:
+            sel = np.arange(len(rows))                    # the whole bootstrap background
+        elif sampling == 'systematic':
+            from sampling import systematic_indices
+            sel = systematic_indices(len(rows), min(n_pool, len(rows)))
+        elif sampling == 'random':
+            sel = rng.choice(len(rows), size=min(n_pool, len(rows)), replace=False)
+        else:
+            raise ValueError(f"sampling must be 'systematic' or 'random', got {sampling!r}")
+        if n_pool is None:
+            # whole background: kept float32 and gathered in chunks (a float64
+            # copy of every band of a million pixels would be ~1.8 GB)
+            pool = np.empty((len(sel), int(m.sum())), np.float32)
+            for i in range(0, len(sel), 65536):
+                s_ = sel[i:i + 65536]
+                pool[i:i + len(s_)] = np.asarray(cube[rows[s_], :, cols[s_]], np.float32)[:, m]
+        else:
+            pool = cube[rows[sel], :, cols[sel]].astype(float)[:, m]
+        pool_rc = np.column_stack([rows[sel], cols[sel]])
+        # full band axis on the first pass; already the fit window afterwards
+        ceiling = None if ceiling is None else (np.asarray(ceiling, float)[m] if np.size(ceiling) == len(m)
+                                                else np.asarray(ceiling, float))
+        if ceiling is None and raster_path is not None:
+            try:
+                import enmap_quality as eq
+                files = eq.find_quality_files(raster_path)
+                if files.get('metadata'):
+                    ceiling = np.asarray(eq.band_ceilings_from_metadata(files['metadata'])[0], float)[m]
+            except Exception as exc:                          # pragma: no cover
+                if verbose:
+                    print(f'  detector: band ceilings unavailable ({exc.__class__.__name__}: {exc})')
+        det = FireGLRT(w, pool, K=K, ceiling=ceiling, pool_rc=pool_rc, rng=rng, sampling=sampling,
+                       n_fit=None if n_pool is None else 8000, pool_trim=pool_trim if n_pool is None else None)
+        window = np.ascontiguousarray(np.transpose(cube[:, m, :], (0, 2, 1)))
+        out = det.detect_cube(window, p_fa=p_fa)
+        del window
+        if _pass + 1 >= int(pool_passes):
+            break
+        # leave out everything the detector itself finds fire-like, then retrain
+        thr_c = det.threshold(clean_p_fa)
+        hot = (np.nan_to_num(out['lam'], nan=0.0) > thr_c) | out['detections'] | out['candidates']
+        excl = ndi.binary_dilation(hot, iterations=int(margin_px)) if hot.any() else hot
+        new_bkg = boot_bkg & ~excl
+        changed = float((new_bkg != pool_bkg).sum()) / max(int(pool_bkg.sum()), 1)
+        if verbose:
+            print(f'  detector pass {_pass + 1}: {int(hot.sum())} pixels above the {clean_p_fa:g} null quantile or '
+                  f'classed fire/candidate; pool {int(pool_bkg.sum())} -> {int(new_bkg.sum())} px '
+                  f'(Planck at 1100 K retained {det.planck_retained[int(np.argmin(abs(det.T_grid - 1100)))]:.3f})')
+        pool_bkg = new_bkg
+        if changed < 1e-3:
+            break
     fire_mask = out['detections'].copy()
     cls = np.where(out['detections'], 1, 0)
     if include_candidates:
@@ -420,7 +545,8 @@ def detect_fire_pixels_glrt(cube, wavelength, band_mask, hotspot_index=None, swi
                 point_class=cls[fire_points[:, 0], fire_points[:, 1]] if len(fire_points) else np.zeros(0, int),
                 point_lambda=out['lam'][fire_points[:, 0], fire_points[:, 1]] if len(fire_points) else np.zeros(0),
                 point_T_best=out['T_best'][fire_points[:, 0], fire_points[:, 1]] if len(fire_points) else np.zeros(0),
-                tau_source=det.tau_source, n_pool=int(len(pool)))
+                tau_source=det.tau_source, n_pool=int(len(pool)), n_pool_passes=_pass + 1,
+                planck_retained=dict(zip(det.T_grid.tolist(), det.planck_retained)))
     if verbose:
         print(f'  Fire detection (GLRT, this work): background subspace K={K} explains '
               f'{100 * det.explained:.2f}% of the fire-free pool ({len(pool)} px); fire-term transmittance '

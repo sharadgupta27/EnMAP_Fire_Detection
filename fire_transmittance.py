@@ -230,7 +230,7 @@ CONTINUUM_ANCHORS = ((1520.0, 1740.0), (2100.0, 2280.0))
 
 
 def background_absorption_template(pool, wavelength, anchors=CONTINUUM_ANCHORS,
-                                   regions=ABSORBER_REGIONS, n_sample=3000, rng=None):
+                                   regions=ABSORBER_REGIONS, n_sample=3000, rng=None, sampling='random'):
     """The scene's gas-absorption signature from its own background pixels.
 
     Every background spectrum is solar irradiance times surface reflectance
@@ -241,6 +241,10 @@ def background_absorption_template(pool, wavelength, anchors=CONTINUUM_ANCHORS,
     thousand pixels removes the surface. Within the anchors g is zero by
     construction; outside the absorber regions it is not used.
 
+    `sampling`: how the `n_sample` pixels are taken from a larger pool -
+    'random' (from `rng`) or 'systematic' (evenly spaced in the pool's
+    order, sampling.systematic_indices; no random element).
+
     Returns dict(template=g (n_bands,), regions, anchor_mask, region_masks).
     """
     w = np.asarray(wavelength, float)
@@ -248,7 +252,13 @@ def background_absorption_template(pool, wavelength, anchors=CONTINUUM_ANCHORS,
     X = np.asarray(X[np.all(np.isfinite(X), axis=1) & np.all(X > 0, axis=1)], dtype=float)
     rng = rng if rng is not None else np.random.default_rng(0)
     if len(X) > n_sample:
-        X = X[rng.choice(len(X), n_sample, replace=False)]
+        if sampling == 'systematic':
+            from sampling import systematic_indices
+            X = X[systematic_indices(len(X), n_sample)]
+        elif sampling == 'random':
+            X = X[rng.choice(len(X), n_sample, replace=False)]
+        else:
+            raise ValueError(f"sampling must be 'random' or 'systematic', got {sampling!r}")
     anchor = np.zeros(len(w), bool)
     for lo, hi in anchors:
         anchor |= (w >= lo) & (w <= hi)
@@ -496,7 +506,7 @@ def estimate_fire_term_transmittance(fire_spectra, wavelength, endmember_libs, n
 
 def split_half_validation(fire_spectra, wavelength, endmember_libs, rng=None, n_rounds=4,
                           emissivity=1.0, per_pixel_kwargs=None, estimator_kwargs=None,
-                          device=None, round0_retrievals=None, **retrieval_kwargs):
+                          device=None, round0_retrievals=None, split='random', **retrieval_kwargs):
     """Out-of-sample check of the transmittance estimate: tau_fine is
     estimated on a random half of the fire pixels and APPLIED to the other
     half, whose misfit with and without it is compared. Returns dict with
@@ -508,7 +518,9 @@ def split_half_validation(fire_spectra, wavelength, endmember_libs, rng=None, n_
     retrievals of all N pixels with the same libraries and arguments (the
     scene estimate's 'retrievals_round0'), reused for both halves' round 0
     and for the held-out 'before' fits - the same computation three times
-    over otherwise."""
+    over otherwise. `split`: 'random' (a permutation from `rng`) or
+    'interleaved' (alternate pixels in the given order, no random element;
+    sampling.interleaved_halves)."""
     Y = np.atleast_2d(np.asarray(fire_spectra, dtype=float))
     N = Y.shape[0]
     rng = rng if rng is not None else np.random.default_rng(0)
@@ -517,8 +529,14 @@ def split_half_validation(fire_spectra, wavelength, endmember_libs, rng=None, n_
     if per_pixel_kwargs is None:
         per_pixel_kwargs = [{}] * N
     estimator_kwargs = dict(estimator_kwargs or {})    # ridge, ridge_target, smooth_mode, tau_bounds
-    perm = rng.permutation(N)
-    A_idx, B_idx = perm[: N // 2], perm[N // 2:]
+    if split == 'interleaved':
+        from sampling import interleaved_halves
+        A_idx, B_idx = interleaved_halves(N)
+    elif split == 'random':
+        perm = rng.permutation(N)
+        A_idx, B_idx = perm[: N // 2], perm[N // 2:]
+    else:
+        raise ValueError(f"split must be 'random' or 'interleaved', got {split!r}")
     out = {}
     taus = {}
     for name, fit_idx, test_idx in (('A', A_idx, B_idx), ('B', B_idx, A_idx)):
