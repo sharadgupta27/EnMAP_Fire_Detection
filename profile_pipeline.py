@@ -268,6 +268,7 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
     w = wavelength[band_mask]
     pool_m = np.atleast_2d(bkg_pool)          # own dtype; subsets are converted where used
     ref = pr.column_median(pool_m, band_mask)
+    out['reference_radiance'] = ref                # fit-window median of the pool (callers reuse it)
     fire_full = cube[fire_points[:, 0], :, fire_points[:, 1]].astype(float)
     fire = fire_full[:, band_mask]
     emissivity = float(cfg.get('emissivity', 1.0))
@@ -457,6 +458,7 @@ def run_profile_ml_stage(cube, wavelength, fire_points, background_mask, bkg_poo
             df['T_hot_min_K_saturated'] = np.nan
     except Exception as exc:
         warnings.warn(f'This work: saturation bounds failed ({exc.__class__.__name__}: {exc})')
+    _step('saturation bounds')
     eps_main = df.attrs.get('eps_model_error')
     # fire radiative power with its interval along the temperature profile
     # (uncertainty.py); widened below with the transmittance draws like T

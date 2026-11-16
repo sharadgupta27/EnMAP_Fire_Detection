@@ -49,7 +49,6 @@ import json
 import os
 import platform
 import re
-import sys
 import warnings
 from xml.sax.saxutils import escape as _esc
 

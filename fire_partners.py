@@ -41,7 +41,6 @@ How the comparison is made, and why (stated in the report):
 """
 
 import datetime as _dt
-import glob
 import io
 import os
 import re

@@ -102,10 +102,86 @@ def widen_frp(df, df_alt, emissivity=1.0, area_m2=PIXEL_AREA_M2):
 # Monte Carlo for methods that publish no uncertainty
 # --------------------------------------------------------------------------
 
+def _dennison_replicates(Y, w, reflected_endmembers, T_grid=None, emissivity=1.0, transmittance=None,
+                         saturated=None, apply_channel_subset=True, encoded_weights=True):
+    """temperature_methods.dennison_mesma() for many replicate spectra of
+    ONE pixel at once: Y is (n_rep, n_bands). Returns the selected
+    temperature per replicate, NaN where the method has no feasible model.
+
+    Same model, channels, weights, feasibility rule and selection order as
+    dennison_mesma (first minimum of the encoded SSE over temperatures, then
+    endmembers); only the loop over replicates and temperatures is replaced
+    by array operations, with everything that does not depend on the
+    replicate (the 101 emitted endmembers and their normal-equation terms)
+    computed once. The selected temperature is a grid value, so it is the
+    same number unless two models tie to rounding (test_uncertainty.py
+    checks it replicate by replicate). The Monte Carlo of a 660-pixel tile
+    takes ~4 s this way instead of ~37 s."""
+    import temperature_methods as tm
+    w = np.asarray(w, dtype=float)
+    Y = np.atleast_2d(np.asarray(Y, dtype=float))
+    R = np.atleast_2d(np.asarray(reflected_endmembers, dtype=float))
+    T_grid = tm.DENNISON2006_T_GRID if T_grid is None else np.asarray(T_grid, dtype=float)
+    out = np.full(len(Y), np.nan)
+    m = np.all(np.isfinite(Y), axis=0) & np.all(np.isfinite(R), axis=0)
+    if apply_channel_subset:
+        m &= tm.dennison_channel_mask(w)
+    if saturated is not None:
+        m &= ~np.asarray(saturated, dtype=bool)
+    if m.sum() < 3:
+        return out
+    ww, Rw = w[m], R[:, m]
+    tau = np.ones(ww.shape) if transmittance is None else np.asarray(transmittance, dtype=float)[m]
+    if encoded_weights:
+        gain = np.where(ww < tm.DENNISON2006_ENCODED_GAIN_BOUNDARY_NM,
+                        tm.DENNISON2006_ENCODED_GAIN[0], tm.DENNISON2006_ENCODED_GAIN[1])
+        gain = gain * tm._W_M2_SR_NM_TO_UW_CM2_SR_NM
+    else:
+        gain = np.ones(ww.shape)
+    Rg, Yg = Rw * gain, Y[:, m] * gain
+    EG = np.array([emissivity * tau * tm._planck_nm(ww, T) * gain for T in T_grid])   # (nT, nb)
+    a = np.einsum('jn,jn->j', Rg, Rg)                 # (J,)
+    b = EG @ Rg.T                                     # (nT, J)
+    c = np.einsum('tn,tn->t', EG, EG)                 # (nT,)
+    det = a[None, :] * c[:, None] - b * b             # (nT, J)
+    # a few replicates at a time: the residual array is (rep, nT, J, nb)
+    for r0 in range(0, len(Y), 8):
+        Yb = Yg[r0:r0 + 8]
+        d = Yb @ Rg.T                                 # (rep, J)
+        g = Yb @ EG.T                                 # (rep, nT)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            f_r = (c[None, :, None] * d[:, None, :] - b[None] * g[:, :, None]) / det[None]
+            f_e = (a[None, None, :] * g[:, :, None] - b[None] * d[:, None, :]) / det[None]
+            tot = f_r + f_e
+            ok = np.isfinite(tot) & (tot >= 0.0) & (tot <= 1.0)
+            resid = Yb[:, None, None, :] - f_r[..., None] * Rg[None, None] - f_e[..., None] * EG[None, :, None, :]
+            sse = np.sum(resid ** 2, axis=3)
+        sse[~ok] = np.inf
+        flat = sse.reshape(len(Yb), -1)
+        k = np.argmin(flat, axis=1)                   # first minimum in (T, endmember) order
+        found = np.isfinite(flat[np.arange(len(Yb)), k])
+        out[r0:r0 + 8][found] = T_grid[k[found] // R.shape[0]]
+    return out
+
+
 def _mc_one_pixel(func, y, w, background_draws, n_mc, sigma, seed, kwargs, needs):
     rng = np.random.default_rng(seed)
     T = np.full(n_mc, np.nan)
-    for k in range(n_mc):
+    import temperature_methods as tm
+    if needs != 'background_spectrum' and func is tm.dennison_mesma:
+        # all replicates at once; the noise is drawn in the same order as the
+        # loop below draws it (one row of standard normals per replicate)
+        kw = {a: b for a, b in kwargs.items() if a != '_endmembers'}
+        Yk = y[None, :] + sigma[None, :] * rng.standard_normal((n_mc, len(y)))
+        T = _dennison_replicates(Yk, w, kwargs['_endmembers'], **kw)
+        T_grid = kw.get('T_grid')
+        T_grid = tm.DENNISON2006_T_GRID if T_grid is None else np.asarray(T_grid, dtype=float)
+        at_bound = np.array([tm._bound_flag(t, float(T_grid[0]), float(T_grid[-1])) for t in T])
+        T = np.where(at_bound, np.nan, T)
+        n_mc_loop = 0
+    else:
+        n_mc_loop = n_mc
+    for k in range(n_mc_loop):
         yk = y + sigma * rng.standard_normal(len(y))
         if needs == 'background_spectrum':
             bk = background_draws[rng.integers(len(background_draws))] if background_draws is not None \

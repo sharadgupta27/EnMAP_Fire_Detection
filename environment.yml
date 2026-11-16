@@ -3,21 +3,24 @@
 #   conda env create -f environment.yml
 #   conda activate enmap-fire
 #
-# Then confirm LAPACK actually works before running anything:
+# Run everything INSIDE the activated environment (or through
+# `conda run -n enmap-fire python ...`). On Windows, calling the
+# environment's python.exe by its path without activating it leaves the
+# BLAS/LAPACK DLLs off the search path; the first LAPACK call (curve_fit,
+# np.linalg.lstsq, a Matplotlib transform inversion) then terminates the
+# interpreter with exit code 0xC06D007F and no traceback - no Python
+# exception is raised, so none of the pipeline's try/except paths can report
+# it. One-line check:
 #
 #   python -c "import numpy as np; np.linalg.inv(np.eye(3)); print('LAPACK ok')"
 #
-# That check is not paranoia. A broken numpy/OpenBLAS linkage does not raise a
-# Python exception - it terminates the interpreter outright (on Windows, exit
-# code 0xC06D007F, no traceback), which takes down curve_fit(method='trf') and
-# therefore the entire temperature retrieval, every np.linalg.lstsq in
-# thermal_sharpening.py, and matplotlib's transform inversion. Because the
-# process is killed rather than raising, none of the try/except recovery paths
-# in estimate_temperature() get a chance to run.
-#
-# python is pinned to 3.11 and the BLAS provider is named explicitly for that
-# reason: the bleeding-edge 3.14 + numpy 2.5 conda-forge combination is where
-# this was observed to break.
+# Versions: every number in VERIFICATION.md and in the manuscript was
+# produced with Python 3.14, NumPy 2.5, SciPy 1.18, pandas 3.0, Matplotlib
+# 3.11, joblib 1.6, GDAL 3.13 and numba 0.68. NumPy and SciPy are pinned to
+# those minor versions because the non-negative least-squares solver
+# (scipy.optimize.nnls) was reimplemented more than once between SciPy 1.14
+# and 1.18; another implementation gives the same optimum to rounding, but
+# results are then no longer identical bit for bit to the published ones.
 
 name: enmap-fire
 
@@ -26,32 +29,41 @@ channels:
   - nodefaults
 
 dependencies:
-  - python=3.11
+  - python=3.14
 
-  # --- numerics: pin the BLAS provider, not just numpy ---
-  - libblas=*=*openblas
-  - numpy=2.1.*
-  - scipy=1.14.*
+  # --- numerics (pinned: see the note on versions above) ---
+  - numpy=2.5.*
+  - scipy=1.18.*
+  - numba>=0.68          # compiled inner solver of stage 4 (fcls_jit.py); optional:
+                         # without it the same results come from the plain loop, ~20% slower
 
   # --- data handling ---
-  - pandas>=2.0
-  - joblib>=1.3          # parallel per-pixel retrieval (run_pipeline)
+  - pandas>=3.0
+  - joblib>=1.6          # every per-pixel stage runs on all cores
   - tqdm>=4.65
 
   # --- geospatial ---
   - gdal>=3.8            # osgeo.gdal / osgeo.osr - EnMAP, Landsat, ECOSTRESS
   - pyproj>=3.6          # VIIRS sinusoidal + SLSTR regridding
   - h5py>=3.10           # VIIRS VNP21A1D/VJ121A1D granules
-  - netcdf4>=1.6         # Sentinel-3 SLSTR SL_2_LST
+  - netcdf4>=1.6         # Sentinel-3 SLSTR, GOES and LSA SAF products
 
-  # --- plotting ---
+  # --- figures and the PDF scene report ---
   - matplotlib-base>=3.8
+  - reportlab>=4.0       # scene_report.py (Report_<scene>.pdf)
+  - pillow>=10
 
   # --- archive access ---
-  - requests>=2.31       # CMR, LandsatLook STAC, Copernicus Data Space
+  - requests>=2.31       # CMR, LandsatLook STAC, Copernicus Data Space, FIRMS
 
-  # --- GUI (optional: only Fire_analysis_with_EnMAP_GUI.py needs it) ---
-  - ttkbootstrap>=1.10
+  # --- GUI (Fire_analysis_with_EnMAP_GUI.py; tkinter itself ships with python) ---
+  - contextily>=1.6      # optional: Sentinel-2 cloudless basemap in the map view
+  - rasterio>=1.3        # optional: needed by the basemap only
 
   # --- development ---
-  - pyflakes             # the audit's static pass
+  - ruff                 # static pass: ruff check --select F,E9 .
+
+  # Optional extras, installed on demand (the pipeline reports what is missing):
+  #   pip install earthaccess   # ECOSTRESS / VIIRS / HLS download (NASA Earthdata login)
+  #   pip install arosics       # --coregister
+  #   pip install cvxpy         # experimental PSF / cluster-FRP modules only

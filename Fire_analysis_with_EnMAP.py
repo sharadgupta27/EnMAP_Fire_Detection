@@ -4631,7 +4631,7 @@ def plot_hotspot_index_map(hotspot_index, scene, threshold_used, fire_points,
             cls = np.asarray(detection_info.get('point_class', np.ones(len(px), int)))
             lam_pts = np.asarray(detection_info.get('point_lambda', lam[px, py]), dtype='float64')
             lam_pts_img = np.log10(np.clip(lam_pts, 1e-3, None))
-            sc = _markers(ax_a, lam_pts_img, 'autumn_r', lo_a, max(hi_a, np.nanmax(lam_pts_img) if lam_pts.size else hi_a))
+            _markers(ax_a, lam_pts_img, 'autumn_r', lo_a, max(hi_a, np.nanmax(lam_pts_img) if lam_pts.size else hi_a))
             cbar = fig.colorbar(pcm, ax=ax_a, shrink=0.8, pad=0.03,
                                 label='detector statistic  log$_{10}$ Λ')
             cbar.ax.axhline(np.log10(max(thr, 1e-3)), color='#d62728', linewidth=1.2)
@@ -6030,7 +6030,9 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
                 _tau_fit = profile_ml['tau'][band_mask]
                 _profile_method_kwargs = {'ProfileML': {
                     'tau': _tau_fit, 'snr': _pp.DEFAULT_SNR,
-                    'reference_radiance': _pr_cm(bkg_pool, band_mask),
+                    'reference_radiance': (profile_ml['reference_radiance']
+                                           if profile_ml.get('reference_radiance') is not None
+                                           else _pr_cm(bkg_pool, band_mask)),
                     'rel_model_error': float(profile_ml['eps']) if profile_ml.get('eps') is not None else 0.05,
                     'corr_length_nm': 0.0}}
         except PipelineCancelled:
@@ -6847,4 +6849,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # Run through the module's importable name, not as __main__. Functions
+    # that live in __main__ cannot be pickled by reference, so joblib ships
+    # each one BY VALUE with every task (main_temp_estimation and everything
+    # it reaches, re-serialised 600+ times in stage 5: ~20 s of the parent
+    # process on a 660-pixel tile). The helper modules import this file by
+    # name anyway, so it is not loaded an extra time.
+    import Fire_analysis_with_EnMAP as _pipeline
+    _pipeline.main()

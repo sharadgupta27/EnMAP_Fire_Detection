@@ -176,15 +176,104 @@ def joint_frp_bound(wavelength_nm, excess_lower, pixel_area_m2=900.0):
     if not k.any():
         return np.nan, 0
     B = planck_nm(w[k][:, None], _LP_T[None, :])
-    # scale rows and columns for the solver; the optimum is unchanged
-    s = 1.0 / e[k]
-    cost = SIGMA_SB * _LP_T ** 4
-    cs = cost.max()
-    res = linprog(cost / cs, A_ub=-(B * s[:, None]), b_ub=-np.ones(int(k.sum())), bounds=(0, None),
-                  method='highs')
+    # Scale rows by the right-hand side and columns by the cost: with
+    # u_j = sigma T_j^4 x_j the programme is  min sum(u)  s.t.  A u >= 1,
+    # u >= 0,  A[k, j] = B(lambda_k, T_j) / (e_k sigma T_j^4) - the emitted
+    # radiance in band k per unit of radiant exitance. Same optimum, and the
+    # entries no longer span the ~20 decades of B over 300-3000 K.
+    A = B / (e[k][:, None] * (SIGMA_SB * _LP_T ** 4)[None, :])
+    # Exact reductions (the optimum is unchanged): a band constraint implied
+    # by another one, and a temperature node that another node beats in
+    # every remaining band at the same cost, are removed. Every band's
+    # column profile rises to T*(lambda) and falls after it, so only nodes
+    # between the smallest and the largest T* survive (~1500-2800 K), and a
+    # ~100 x 800 programme becomes ~10 x 80.
+    A = A[_undominated_rows(A)]
+    A = A[:, _undominated_rows(-A.T, ends_only=False)]
+    res = linprog(np.ones(A.shape[1]), A_ub=-A, b_ub=-np.ones(len(A)), bounds=(0, None), method='highs')
     if res.status != 0:
         return np.nan, int(k.sum())
-    return float(res.fun * cs * pixel_area_m2 / LP_KAPPA / 1e6), int(k.sum())
+    return float(res.fun * pixel_area_m2 / LP_KAPPA / 1e6), int(k.sum())
+
+
+def _undominated_rows(A, ends_only=True):
+    """Boolean mask of the rows of A (constraints A[k] @ x >= 1, x >= 0) that
+    are not implied by another row. Row k is implied by row d when
+    A[d] <= A[k] in every column: then A[k] @ x >= A[d] @ x >= 1 for every
+    x >= 0. Dropping implied rows leaves the feasible set, and so the
+    optimum, unchanged; on the saturated pixels of an EnMAP tile it leaves a
+    handful of the ~100 band constraints, and the solve takes milliseconds
+    instead of half a second.
+
+    With ends_only, candidates are found from the first and last column
+    (for Planck rows the ratio of two rows is monotone in T, so the end
+    nodes decide) and every removal is then verified on all columns, so the
+    result does not rest on that monotonicity; otherwise every pair is
+    compared on all columns. Equal rows: the first is kept.
+
+    The same function removes dominated COLUMNS (variables at unit cost)
+    when given -A.T: column j is beaten by column d when A[:, d] >= A[:, j],
+    since moving u_j to u_d keeps every constraint at the same cost."""
+    n = len(A)
+    if n <= 1:
+        return np.ones(n, bool)
+    idx = np.arange(n)
+    if not ends_only:
+        D = np.ones((n, n), bool)
+        for col in A.T:                                # one column at a time: n x n booleans, no n x n x m array
+            D &= col[:, None] <= col[None, :]
+        np.fill_diagonal(D, False)
+        D &= ~(D.T & (idx[:, None] > idx[None, :]))    # equal rows: the lower index dominates
+        return ~D.any(axis=0)
+    lo, hi = A[:, 0], A[:, -1]
+    # D[d, k]: row d may dominate row k
+    D = (lo[:, None] <= lo[None, :]) & (hi[:, None] <= hi[None, :])
+    np.fill_diagonal(D, False)
+    D &= ~(D.T & (idx[:, None] > idx[None, :]))       # mutual (equal at the ends): lower index dominates
+    keep = np.ones(n, bool)
+    for k_ in np.flatnonzero(D.any(axis=0)):
+        for d in np.flatnonzero(D[:, k_]):
+            if np.all(A[d] <= A[k_]):
+                keep[k_] = False
+                break
+    return keep
+
+
+def pool_percentile(pool, q, block=16):
+    """np.nanpercentile(pool.astype(float), q, axis=0) of an (N, n_bands)
+    pool, to the last bit, without the float64 copy and without N-strided
+    column reads.
+
+    The percentile (NumPy's default 'linear' method) interpolates between
+    two order statistics of each band. They are found by a partial sort of
+    the band in the pool's own dtype (conversion to float64 is monotone and
+    exact, so the order statistics are the same numbers), a block of bands
+    at a time copied band-contiguous; only the two values are converted and
+    interpolated in float64 with NumPy's own formula. On a 10^6 x 224
+    float32 pool this takes ~3 s; one np.nanpercentile per strided column
+    took 60-150 s (the whole array is traversed once per band)."""
+    pool = np.atleast_2d(pool)
+    n_bands = pool.shape[1]
+    out = np.full(n_bands, np.nan)
+    qf = np.true_divide(q, 100.0)
+    for j0 in range(0, n_bands, block):
+        blk = np.ascontiguousarray(pool[:, j0:j0 + block].T)       # (bands, N), band-contiguous
+        for i, col in enumerate(blk):
+            if col.dtype.kind == 'f':
+                n = int(col.size - np.count_nonzero(np.isnan(col)))
+            else:
+                n = int(col.size)
+            if n == 0:
+                continue
+            vi = (n - 1) * qf
+            lo = int(np.floor(vi))
+            hi = min(lo + 1, n - 1)
+            g = vi - lo
+            col.partition((lo, hi))                # NaN sort last: ranks 0..n-1 are the finite values
+            a, b = np.float64(col[lo]), np.float64(col[hi])
+            d = b - a
+            out[j0 + i] = (b - d * (1 - g)) if g >= 0.5 else (a + d * g)
+    return out
 
 
 def bounds_for_pixels(wavelength_nm, censored, censor_levels, libraries, pool, pixel_area_m2=900.0,
@@ -200,9 +289,8 @@ def bounds_for_pixels(wavelength_nm, censored, censor_levels, libraries, pool, p
     a censored band, from its censored AND its usable bands."""
     import pandas as pd
     pool = np.atleast_2d(pool)
-    # one band at a time in float64 (the whole pool in float64 is ~1.8 GB)
-    pool_hi = np.array([np.nanpercentile(np.asarray(pool[:, j], dtype=float), pool_quantile)
-                        for j in range(pool.shape[1])])
+    # exact per-band percentile without a float64 copy of the pool (~1.8 GB)
+    pool_hi = pool_percentile(pool, pool_quantile)
     rows = []
     for i in range(len(censored)):
         L = libraries[i] if libraries is not None else None

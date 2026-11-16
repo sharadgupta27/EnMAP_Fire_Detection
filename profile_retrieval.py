@@ -232,7 +232,6 @@ References
 """
 
 import math
-import warnings
 
 import numpy as np
 from scipy import optimize, stats
@@ -598,19 +597,42 @@ class _FCLSProblem:
             out[k] = float(r @ r)
         return out
 
-def column_median(X, cols=None, nan=False):
-    """Per-column median of a (n, n_bands) array, as float64, one column at a
-    time: the same values as np.median(np.asarray(X[:, cols], float), axis=0)
-    without the float64 copy of the whole array (a 10^6-spectrum background
-    pool is ~0.6-1.8 GB in float64). nan=True uses nanmedian."""
+def column_median(X, cols=None, nan=False, block=16):
+    """Per-column median of a (n, n_bands) array, as float64: the same
+    values, to the last bit, as np.median(np.asarray(X[:, cols], float),
+    axis=0), without the float64 copy of the whole array (a 10^6-spectrum
+    background pool is ~0.6-1.8 GB in float64) and without one n-strided
+    read of the array per column (which made this ~0.4 s per band on such a
+    pool). A block of columns is gathered band-contiguous in X's own dtype
+    and each is partially sorted in place; conversion to float64 is monotone
+    and exact, so the middle order statistics are the same numbers, and
+    only they are converted. nan=True gives nanmedian."""
     X = np.atleast_2d(X)
     if cols is None:
         idx = np.arange(X.shape[1])
     else:
         c = np.asarray(cols)
         idx = np.flatnonzero(c) if c.dtype == bool else c
-    f = np.nanmedian if nan else np.median
-    return np.array([f(np.asarray(X[:, j], dtype=float)) for j in idx])
+    out = np.full(len(idx), np.nan)
+    for b0 in range(0, len(idx), block):
+        blk = np.ascontiguousarray(X[:, idx[b0:b0 + block]].T)
+        for i, col in enumerate(blk):
+            n = col.size
+            if col.dtype.kind == 'f':
+                n_nan = int(np.count_nonzero(np.isnan(col)))
+                if n_nan and not nan:
+                    continue                       # np.median: NaN when any value is NaN
+                n -= n_nan                         # NaN sort last: ranks 0..n-1 are the finite values
+            if n == 0:
+                continue
+            k = n // 2
+            if n % 2:
+                col.partition(k)
+                out[b0 + i] = np.float64(col[k])
+            else:
+                col.partition((k - 1, k))
+                out[b0 + i] = (np.float64(col[k - 1]) + np.float64(col[k])) / 2.0
+    return out
 
 
 def _planck_nm_grid(wavelength_nm, T_values, emissivity=1.0):

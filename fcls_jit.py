@@ -118,7 +118,6 @@ def _sweep(k0, FW, H, fwn2, scale, d_e, QL, RL, b_p, d_p, Qb, Qd, QB, bB, dB, Bd
     Ld = np.empty(m)
     g1 = np.empty(nlib_all + 1)
     gd = np.empty(nlib_all + 1)
-    cn = np.empty(nlib_all + 1)
     for k in range(k0, nT):
         xf1 = 0.0
         xfd = 0.0

@@ -117,7 +117,7 @@ class FireGLRT:
             # dips that would otherwise be left in the residual of every
             # strong fire pixel.
             try:
-                from fire_transmittance import background_absorption_template, template_scale_factors
+                from fire_transmittance import background_absorption_template
                 if whole:
                     from sampling import systematic_indices
                     _tp = pool[systematic_indices(len(pool), min(3000, len(pool)))]
@@ -194,8 +194,21 @@ class FireGLRT:
             held = held if len(held) >= 2000 else np.arange(len(pool))
             lam0, chi0, _ = self.score(pool[held])
         self.adequacy_quantile = float(adequacy_quantile)
-        self.chi_gate = float(np.nanquantile(chi0, self.adequacy_quantile))
-        ok0 = chi0 <= self.chi_gate
+        # The gate and the null are set on the pool spectra that could be
+        # scored. A pool pixel with too few unsaturated bands (cloud, glint,
+        # a bright roof) has an infinite statistic and misfit by
+        # construction; it is not a draw from the null, and once such
+        # pixels exceed 1 - adequacy_quantile of the pool the quantile
+        # itself is infinite (NaN after interpolation), which used to empty
+        # the null sample and stop the run (DT0000001755 tile 004).
+        scored0 = np.isfinite(chi0) & np.isfinite(lam0)
+        self.n_pool_unscored = int((~scored0).sum())
+        if not scored0.any():
+            raise ValueError('FireGLRT: no pool spectrum could be scored - every background pixel has fewer '
+                             f'than {self.K + 6} bands below {self.ceiling_fraction:g} of the detector ceiling '
+                             'or a non-positive radiance in the fit window. Check the scene and the band ceilings.')
+        self.chi_gate = float(np.nanquantile(np.where(scored0, chi0, np.nan), self.adequacy_quantile))
+        ok0 = scored0 & (chi0 <= self.chi_gate)
         self.null_chi = chi0[ok0]; self.null_chi_before = self._last_chi_before[ok0]
         self.held_rc = None if self.pool_rc is None else self.pool_rc[held][ok0]
         self.null_sample_all = lam0[ok0]
@@ -300,6 +313,8 @@ class FireGLRT:
         shape (self.gpd['c']) is the diagnostic: above 0.5 the tail is heavy
         and the extrapolated quantile is uncertain by a factor of several."""
         x = self.null_sample
+        if len(x) == 0:
+            raise ValueError('FireGLRT.threshold: the null sample is empty')
         self.threshold_source = 'empirical'
         if p_fa * len(x) >= min_exceedances:
             return float(np.quantile(x, 1 - p_fa))

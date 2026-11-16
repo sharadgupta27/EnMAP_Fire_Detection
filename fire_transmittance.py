@@ -139,8 +139,8 @@ Units: radiance in W m^-2 sr^-1 nm^-1 and wavelength in nm throughout.
 
 import numpy as np
 
-from profile_retrieval import (profile_retrieval, noise_sigma, _planck_nm, _design,
-                               weighted_fcls, _many)
+from profile_retrieval import (noise_sigma, _planck_nm, _design,
+                               _many)
 
 __all__ = ['estimate_fire_term_transmittance', 'remove_wien_tilt', 'split_half_validation']
 
