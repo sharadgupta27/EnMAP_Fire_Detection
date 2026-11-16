@@ -2,7 +2,7 @@
 
 *Sub-pixel fire detection and temperature retrieval from EnMAP hyperspectral imagery*
 
-[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](environment.yml)
+[![Python](https://img.shields.io/badge/python-3.14-blue.svg)](environment.yml)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Sensor](https://img.shields.io/badge/sensor-EnMAP%20L1B%2FL1C-0073b7)](https://www.enmap.org/)
 
@@ -18,10 +18,11 @@ Everything can be run from a desktop GUI or from the command line, and every run
 
 ### Fire Detection
 
-- **Scene-wide GLRT detector** (default): a generalised likelihood-ratio test against the scene's own background, with a calibrated per-pixel false-alarm rate (`--p-fa`, default 1e-5, about ten false alarms per tile)
+- **Scene-wide GLRT detector** (default): a generalised likelihood-ratio test against the scene's own background, with a per-pixel false-alarm rate calibrated on the scene (`--p-fa`, default 1e-5, about ten expected per tile). It is trained on the whole scene background and has no random element, so a rerun gives the same pixels
 - **Published index detectors**: the two-part SWIR hotspot index with a robust (MAD) or Otsu threshold, kept for comparison
 - **Radiance gate**: an absolute SWIR radiance anomaly is required as well, so shadow and water pixels (where the index ratio is noisy) are not picked up
 - **L1B quality masks**: invalid and saturated bands are flagged per pixel and per band before any fit
+- **Two classes**: *fire* (the fire term explains the excess) and *candidate* (above the threshold, but saturated or poorly explained); the retrieval decides on candidates. A bright surface that saturates no band (sand, cloud) is not treated as a saturated fire
 
 ### Temperature Retrieval (this work)
 
@@ -107,12 +108,14 @@ Each run goes through eight stages, which the GUI ticks off live:
 | `saturation_bounds.py`, `cluster_frp.py` | Bounds from saturated pixels and cluster-level FRP |
 | `absorption_window.py` | Temperatures of saturated pixels from the atmospheric absorption bands |
 | `enmap_quality.py` | Per-pixel, per-band L1B quality (invalid and saturated bands) |
+| `sampling.py` | Seed-free (systematic) subset selection used by the detector and the retrieval |
 | `psf.py`, `psf_convex.py` | EnMAP point-spread function and PSF-aware multi-pixel retrieval (experimental) |
 | `thermal_partners.py` | Search, download, and load Landsat / ECOSTRESS / VIIRS / SLSTR LST |
 | `thermal_sharpening.py` | DisTrad / TsHARP sharpening of coarse LST to 30 m |
 | `fire_partners.py` | FIRMS, GOES, SLSTR FRP, and SEVIRI active-fire products |
 | `coregistration.py` | AROSICS co-registration against HLS |
 | `credentials.py` | Archive logins and keys |
+| `basemap.py` | Sentinel-2 cloudless background for the GUI map (optional) |
 | `scene_report.py` | PDF scene report |
 | `solar_time.py` | Local solar time helpers |
 | `candidate_sites/` | Search for EnMAP scenes over fires with thermal partners, with site shapefiles |
@@ -120,26 +123,25 @@ Each run goes through eight stages, which the GUI ticks off live:
 
 ## Installation
 
-Create the conda environment (Python 3.11, GDAL, and a pinned OpenBLAS):
+Create the conda environment (Python 3.14, NumPy 2.5, SciPy 1.18, GDAL, numba - the versions every published number was produced with):
 
 ```bash
 conda env create -f environment.yml
 conda activate enmap-fire
 ```
 
-Then check that LAPACK works before running anything:
+Always run inside the activated environment (or through `conda run -n enmap-fire python ...`). On Windows, calling the environment's `python.exe` by its path without activating it leaves the LAPACK libraries off the search path, and the first linear-algebra call ends the interpreter with exit code `0xC06D007F` and no traceback. A one-line check:
 
 ```bash
 python -c "import numpy as np; np.linalg.inv(np.eye(3)); print('LAPACK ok')"
 ```
 
-A broken numpy / BLAS link does not raise an error - on Windows the interpreter simply exits (code `0xC06D007F`) with no traceback - so this one-line check saves a lot of confusion.
+numba is optional: without it stage 4 runs its plain solver loop and gives the same results (interval ends agree to 1e-11 K), more slowly.
 
 Optional extras:
 
 ```bash
 pip install earthaccess   # automatic ECOSTRESS / VIIRS / HLS download (free NASA Earthdata login)
-pip install numba         # faster stage 4 (fcls_jit.py); results are identical without it
 pip install arosics       # --coregister
 ```
 
@@ -183,6 +185,7 @@ Frequently used options:
 | --- | --- |
 | `--detection {glrt,robust,otsu}` | Fire-pixel detector (default `glrt`) |
 | `--p-fa 1e-5` | GLRT per-pixel false-alarm rate |
+| `--detector-pool N`, `--null-rule single` | Train the GLRT on N background pixels / clean the null in one pass (`60000` with `single` reproduces runs made before 16 Nov 2026) |
 | `--methods all` | Also run Dozier1981, Dennison2006, Amici2022, and ProfileML through the comparison driver |
 | `--landsat / --ecostress / --viirs / --slstr <file>` | Validate against a thermal granule already on disk |
 | `--*-auto-fetch` | Find and download the closest thermal granule automatically |
@@ -191,6 +194,7 @@ Frequently used options:
 | `--results-dir <dir>` | Output folder (default `results_temperature/`) |
 | `--no-report` | Skip the PDF report |
 | `--serial` | Run on one core |
+| `--seed N` | Seed of the random elements of the published methods (Amici et al. starts, Dennison et al. k-means, Monte Carlo); this work's own results do not depend on it |
 
 Run `python Fire_analysis_with_EnMAP.py --help` for the full list.
 

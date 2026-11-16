@@ -224,7 +224,7 @@ def main():
                     setf(feat, k, v)
                 ly.CreateFeature(feat)
                 feat = None
-            ds = None
+            ds = None  # noqa: F841 - closes the GDAL dataset
 
         made.append((sid, stem, extent, len(rows), os.path.basename(z)))
         print(f'{sid:>4}  {extent:<18} AOI + {len(rows):2d} scene footprints  ->  {stem}_*')

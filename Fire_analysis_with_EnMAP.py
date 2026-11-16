@@ -5405,7 +5405,7 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
                   hotspot_margin_px=5, hotspot_min_cluster_size=1,
                   detection_method='glrt', detection_k=6.0,
                   require_radiance_anomaly=True, detection_radiance_k=6.0,
-                  detection_p_fa=1e-5,
+                  detection_p_fa=1e-5, detection_n_pool=None, detection_null_rule='fixedpoint',
                   config=None, amici_analytic_jacobian=False,
                   progress_hook=None, cancel_event=None,
                   generate_figures=True, figure_dpi=300, figure_hot_threshold=600.0,
@@ -5469,7 +5469,12 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
     (fire_detection.py): every band of the fit window, the retrieval's own
     forward model, a background subspace learned from the scene, a fit-
     adequacy gate and a false-alarm rate `detection_p_fa` per pixel
-    calibrated on the scene itself. The published two-part index test is
+    calibrated on the scene itself. The background subspace is trained
+    on the whole bootstrap background (detection_n_pool=None; an integer
+    trains on that many pixels of it) and the scene null is cleaned of fire
+    clusters to its fixed point (detection_null_rule='fixedpoint';
+    'single' is one pass) - detection_n_pool=60000 with 'single' is the
+    detector of 15 Oct - 15 Nov 2026 (VERIFICATION.md S35). The published two-part index test is
     kept (detection_method='robust' or 'otsu') - the SWIR hotspot index
     (spectral shape, thresholded at median + detection_k*1.4826*MAD) AND an
     absolute SWIR radiance anomaly (magnitude, same form, detection_radiance_k);
@@ -5613,9 +5618,10 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
     Set False to skip it. profile_device says where its per-pixel
     retrievals run: None -> every CPU core (or the PROFILEML_DEVICE
     environment variable), 'joblib' (every core), 'serial' (one core, the
-    reference path); the results are identical. On 16 cores the stage
-    takes about two minutes for a 750-pixel fire front (it took an hour
-    serially). See VERIFICATION.md Section 17.
+    reference path); the results are identical. On 16 logical cores the
+    stage takes about three minutes for the 856 detected pixels of
+    DT0000149658 tile 014, and the whole run about seven (VERIFICATION.md
+    Sections 17 and 35.6).
 
     apply_smoke_correction=True runs temperature_methods.run_smoke_corrected_pixels()
     in stage 6 (this repository's candidate local-background /
@@ -5769,6 +5775,7 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
             swir_radiance=swir_radiance if swir_radiance is not None else swir_radiance_magnitude(cube, wavelength, hotspot_wl_lo, hotspot_wl_hi),
             p_fa=detection_p_fa, margin_px=hotspot_margin_px, raster_path=enmap_radiance_path,
             bootstrap_k=detection_k, verbose=True, sampling=sampling,
+            n_pool=detection_n_pool, null_rule=detection_null_rule,
             rng=np.random.default_rng(int(cfg.get('random_seed', 0))))
         threshold_used = float(detection_info['threshold'])
         if hotspot_min_cluster_size > 1 and len(fire_points):
@@ -6325,10 +6332,12 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
                     for _c in _mc.columns:
                         method_results[_k][_c] = _mc[_c].values
                     _w = (_mc['T_mc_p97_5'] - _mc['T_mc_p2_5']).values
+                    _nw = int(np.isfinite(_w).sum())
                     print(f"  {_tm.method_display_name(_k)}: Monte Carlo uncertainty ({int(n_monte_carlo)} "
                           f"replicates of noise{' and neighbour background' if _k == 'Dozier1981' else ''}) - "
-                          f"median 95% interval width {np.nanmedian(_w):.0f} K over "
-                          f"{int(np.isfinite(_w).sum())} pixels ({time.time() - _t0:.0f} s)")
+                          + (f"median 95% interval width {np.nanmedian(_w):.0f} K over {_nw} pixels"
+                             if _nw else 'no pixel with enough valid replicates')
+                          + f" ({time.time() - _t0:.0f} s)")
             except Exception as exc:
                 warnings.warn(f'Monte Carlo uncertainty failed ({exc.__class__.__name__}: {exc})')
         for key, df in method_results.items():
@@ -6601,7 +6610,15 @@ def run_pipeline(enmap_radiance_path, landsat_lst_path=None, field_data_csv=None
             _det = {}
             if detection_info is not None:
                 _det = {'n_fire': detection_info.get('n_fire'), 'n_candidate': detection_info.get('n_candidate'),
-                        'p_fa': detection_p_fa, 'method': detection_method}
+                        'p_fa': detection_p_fa, 'method': detection_method,
+                        'threshold': detection_info.get('threshold'),
+                        'training_pixels': detection_info.get('n_pool'),
+                        'whole_background': detection_info.get('whole_pool'),
+                        'null_rule': detection_info.get('null_rule'),
+                        'null_passes': detection_info.get('n_null_passes'),
+                        'null_source': detection_info.get('null_source'),
+                        'n_low_headroom_bands': detection_info.get('n_low_headroom_bands'),
+                        'min_headroom': detection_info.get('min_headroom')}
             _settings = dict(_run_args)
             _settings.update({f'config.{k}': v for k, v in cfg.items()
                               if isinstance(v, (str, int, float, bool, type(None)))})
@@ -6709,6 +6726,14 @@ def main():
     parser.add_argument('--p-fa', dest='detection_p_fa', type=float, default=1e-5,
                          help='Per-pixel false-alarm rate of the GLRT detector (default 1e-5, '
                               'about ten false alarms per EnMAP tile).')
+    parser.add_argument('--detector-pool', dest='detection_n_pool', type=int, default=None,
+                        help='GLRT: train the background subspace on this many pixels of the bootstrap '
+                             'background instead of all of it (60000 with --null-rule single reproduces '
+                             'runs of 15 Oct - 15 Nov 2026)')
+    parser.add_argument('--null-rule', dest='detection_null_rule', choices=('fixedpoint', 'single'),
+                        default='fixedpoint',
+                        help='GLRT: clean the scene null of fire clusters to its fixed point (default) or in '
+                             'one pass')
     parser.add_argument('--no-radiance-gate', dest='require_radiance_anomaly',
                          action='store_false',
                          help='Detect fire pixels from the SWIR hotspot index alone, without also '
@@ -6821,6 +6846,7 @@ def main():
     run_pipeline(args.enmap_radiance_path, landsat_lst_path=args.landsat_lst_path,
                  require_radiance_anomaly=args.require_radiance_anomaly,
                  detection_method=args.detection_method, detection_p_fa=args.detection_p_fa,
+                 detection_n_pool=args.detection_n_pool, detection_null_rule=args.detection_null_rule,
                  field_data_csv=args.field_data_csv, ecostress_path=args.ecostress_path,
                  ecostress_auto_fetch=args.ecostress_auto_fetch,
                  landsat_auto_fetch=args.landsat_auto_fetch,
