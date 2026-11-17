@@ -6782,7 +6782,7 @@ def main():
     parser.add_argument('--fire-partners', dest='fire_partner_sources', default='',
                         help="Comma-separated active-fire products to fetch for the FRP comparison: "
                              "FIRMS (MAP_KEY), GOES (Americas, no login), SLSTR (CDSE login), LSASAF (SEVIRI, "
-                             "LSA SAF login). Keys/logins: the ones remembered by the GUI (credentials.py), or "
+                             "LSA SAF login), MTG (MTG-FCI, 10 min, same LSA SAF login). Keys/logins: the ones remembered by the GUI (credentials.py), or "
                              "FIRMS_MAP_KEY, CDSE_USERNAME/CDSE_PASSWORD, LSASAF_USERNAME/LSASAF_PASSWORD.")
     parser.add_argument('--fire-partner-file', dest='fire_partner_files', action='append', default=[],
                         help='An active-fire product on disk (LSA SAF FRP-PIXEL .h5/.nc, SLSTR SL_2_FRP .SEN3, '

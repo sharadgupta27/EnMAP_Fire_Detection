@@ -949,10 +949,12 @@ class EnMAPFireGUI(tk.Tk):
                      'Searches and downloads the SL_2_FRP products within the window below. The Copernicus '
                      'login is asked once and remembered.', columnspan=4)
         self._account_widgets(fire, r + 2, 'cdse')
-        self._toggle(fire, r + 3, 'LSA SAF SEVIRI FRP-PIXEL: FRP every 15 min (Europe and Africa; LSA SAF account)',
+        self._toggle(fire, r + 3, 'LSA SAF Meteosat FRP-PIXEL: SEVIRI every 15 min and MTG-FCI every 10 min '
+                     '(Europe and Africa; LSA SAF account)',
                      self.fire_lsasaf,
-                     'Meteosat SEVIRI FRP-PIXEL list products within ±20 min of EnMAP, downloaded from the LSA SAF '
-                     'data server. The login is asked once and remembered.', columnspan=4)
+                     'Meteosat SEVIRI and MTG-FCI (demonstration product LSA-509) FRP-PIXEL list products within '
+                     '±20 min of EnMAP, downloaded from the LSA SAF data server. The login is asked once and '
+                     'remembered.', columnspan=4)
         self._account_widgets(fire, r + 3, 'lsasaf')
         self._spin(fire, r + 4, 0, 'Polar-orbiter window (± h)', self.fire_window_hours, 0.5, 48, 0.5,
                    'Polar-orbiter products within this many hours of EnMAP are used (geostationary: ±20 min).')
@@ -1388,7 +1390,7 @@ class EnMAPFireGUI(tk.Tk):
                 (self.slstr_auto_fetch, self.slstr_path, 'cdse', 'SLSTR LST download'),
                 (self.fire_slstr, None, 'cdse', 'SLSTR FRP'),
                 (self.fire_firms, None, 'firms', 'FIRMS'),
-                (self.fire_lsasaf, None, 'lsasaf', 'LSA SAF SEVIRI FRP')]
+                (self.fire_lsasaf, None, 'lsasaf', 'LSA SAF Meteosat FRP')]
 
     def _missing_accounts(self):
         need = []
@@ -1572,7 +1574,8 @@ class EnMAPFireGUI(tk.Tk):
             generate_report=bool(self.generate_report.get()),
             fire_partner_sources=tuple(name for name, var in (('FIRMS', self.fire_firms), ('GOES', self.fire_goes),
                                                               ('SLSTR', self.fire_slstr),
-                                                              ('LSASAF', self.fire_lsasaf)) if var.get()),
+                                                              ('LSASAF', self.fire_lsasaf),
+                                                              ('MTG', self.fire_lsasaf)) if var.get()),
             fire_partner_files=tuple(self.fire_files),
             fire_partner_window_hours=float(self.fire_window_hours.get()),
             apply_smoke_correction=bool(self.apply_smoke_correction.get()),

@@ -112,7 +112,7 @@ Each run goes through eight stages, which the GUI ticks off live:
 | `psf.py`, `psf_convex.py` | EnMAP point-spread function and PSF-aware multi-pixel retrieval (experimental) |
 | `thermal_partners.py` | Search, download, and load Landsat / ECOSTRESS / VIIRS / SLSTR LST |
 | `thermal_sharpening.py` | DisTrad / TsHARP sharpening of coarse LST to 30 m |
-| `fire_partners.py` | FIRMS, GOES, SLSTR FRP, and SEVIRI active-fire products |
+| `fire_partners.py` | FIRMS, GOES, SLSTR FRP, SEVIRI and MTG-FCI active-fire products; FRP comparison per overpass |
 | `coregistration.py` | AROSICS co-registration against HLS |
 | `credentials.py` | Archive logins and keys |
 | `basemap.py` | Sentinel-2 cloudless background for the GUI map (optional) |
@@ -189,7 +189,7 @@ Frequently used options:
 | `--methods all` | Also run Dozier1981, Dennison2006, Amici2022, and ProfileML through the comparison driver |
 | `--landsat / --ecostress / --viirs / --slstr <file>` | Validate against a thermal granule already on disk |
 | `--*-auto-fetch` | Find and download the closest thermal granule automatically |
-| `--fire-partners FIRMS,GOES,SLSTR,LSASAF` | Active-fire products for the FRP comparison |
+| `--fire-partners FIRMS,GOES,SLSTR,LSASAF,MTG` | Active-fire products for the FRP comparison (MTG: MTG-FCI every 10 min, LSA SAF login) |
 | `--coregister` | AROSICS co-registration against HLS before comparison |
 | `--results-dir <dir>` | Output folder (default `results_temperature/`) |
 | `--no-report` | Skip the PDF report |

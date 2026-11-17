@@ -14,8 +14,9 @@ and area:
     FIRMS           VIIRS 375 m, MODIS 1 km  FRP per detection        free MAP_KEY (FIRMS_MAP_KEY)
     GOES ABI FDC    2 km, 5-10 min           FRP, fire T, fire area   public AWS bucket, no login
     SLSTR SL_2_FRP  1 km (MWIR), 500 m SWIR  FRP per detection        Copernicus Data Space login
-    LSA SAF FRP     SEVIRI 3 km, 15 min      FRP per detection        LSA SAF login (fetch_lsasaf_frp);
-                    (FCI 1 km: files only)                            MTG-FCI files loaded from disk
+    LSA SAF FRP     SEVIRI 3 km, 15 min      FRP per detection        LSA SAF login (fetch_lsasaf_frp)
+    LSA SAF MTG FRP FCI, 10 min (LSA-509,    FRP per detection        LSA SAF login (fetch_mtg_frp)
+                    demonstration product)
 
 Keys and logins are entered once and remembered (credentials.py).
 
@@ -53,7 +54,8 @@ DETECTION_COLUMNS = ['source', 'platform', 'datetime_utc', 'lat', 'lon', 'frp_MW
                      'fire_T_K', 'fire_area_m2', 'pixel_area_km2', 'confidence', 'day_night', 'file']
 
 FIRMS_URL = 'https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{source}/{area}/{days}/{date}'
-FIRMS_SOURCES = ('VIIRS_SNPP_SP', 'VIIRS_SNPP_NRT', 'VIIRS_NOAA20_SP', 'VIIRS_NOAA20_NRT', 'VIIRS_NOAA21_NRT',
+FIRMS_SOURCES = ('VIIRS_SNPP_SP', 'VIIRS_SNPP_NRT', 'VIIRS_NOAA20_SP', 'VIIRS_NOAA20_NRT',
+                 'VIIRS_NOAA21_SP', 'VIIRS_NOAA21_NRT',
                  'MODIS_SP', 'MODIS_NRT')
 GOES_BUCKET = 'https://noaa-{sat}.s3.amazonaws.com'
 GOES_FIRE_CLASSES = (10, 11, 12, 13, 14, 15, 30, 31, 32, 33, 34, 35)   # FDC Mask: fire pixel codes
@@ -452,9 +454,90 @@ def fetch_lsasaf_frp(bbox, when, window_minutes=20.0, cache_dir='.', username=No
     return det, paths
 
 
+MTG_FRP_URL = 'https://datalsasaf.lsasvcs.ipma.pt/PRODUCTS/MTG/MTFRPPixel/NATIVE/{d:%Y/%m/%d}/'
+MTG_FRP_NAME = re.compile(r'(LSA-509_MTG_MTFRPPIXEL-ListProduct_MTG-FD_(\d{12})\.csv(?:\.gz)?)')
+
+
+def load_mtg_frp_csv(path, bbox=None):
+    """LSA SAF MTG-FCI FRP-PIXEL list product (LSA-509, CSV, one row per fire
+    pixel): FRP and FRP_UNCERTAINTY in MW, ACQTIME = the pixel's own scan
+    time (YYYYMMDDhhmmss UTC), LATITUDE/LONGITUDE = the product's nominal
+    geolocation (the *_PARALLAX columns, 0.5-0.9 km away over central
+    Portugal, are not used), PIXEL_SIZE as given by the product. The
+    plausibility gate rejects a file whose columns are missing or whose FRP
+    is outside 0-1e5 MW, rather than misreading it."""
+    d = pd.read_csv(path)
+    need = {'LATITUDE', 'LONGITUDE', 'FRP', 'ACQTIME'}
+    if not need <= set(d.columns):
+        raise ValueError(f'{os.path.basename(path)}: not an MTG FRP-PIXEL list (lacks {sorted(need - set(d.columns))})')
+    if len(d) and (d['FRP'].min() < 0 or d['FRP'].max() > 1e5):
+        raise ValueError(f'{os.path.basename(path)}: FRP outside 0-1e5 MW - unexpected scaling')
+    if bbox is not None:
+        d = d[_in_bbox(d['LATITUDE'].values, d['LONGITUDE'].values, bbox)]
+    if not len(d):
+        return _empty()
+    when = pd.to_datetime(d['ACQTIME'].astype('int64').astype(str), format='%Y%m%d%H%M%S')
+    return _frame({'source': 'LSA SAF FRP (MTG-FCI)', 'platform': 'MTG-I1',
+                   'datetime_utc': when.dt.to_pydatetime(), 'lat': d['LATITUDE'].values,
+                   'lon': d['LONGITUDE'].values, 'frp_MW': d['FRP'].values.astype(float),
+                   'frp_unc_MW': d['FRP_UNCERTAINTY'].values.astype(float) if 'FRP_UNCERTAINTY' in d else np.nan,
+                   'pixel_area_km2': d['PIXEL_SIZE'].values.astype(float) if 'PIXEL_SIZE' in d else np.nan,
+                   'confidence': (d['FIRE_CONFIDENCE'].astype(str).values if 'FIRE_CONFIDENCE' in d else None),
+                   'file': os.path.basename(path)})
+
+
+def fetch_mtg_frp(bbox, when, window_minutes=20.0, cache_dir='.', username=None, password=None,
+                  session=None):
+    """MTG-FCI FRP-PIXEL list products (LSA SAF LSA-509, every 10 min,
+    demonstration status, back-processed to Jan 2025) within
+    +/-window_minutes of `when`; same LSA SAF login as fetch_lsasaf_frp.
+    Files are cached in cache_dir. Returns (detections in bbox, paths)."""
+    import requests
+    import credentials
+    c = credentials.get('lsasaf', username=username, password=password)
+    if not (c['username'] and c['password']):
+        raise RuntimeError('LSA SAF needs a login: sign in once in the GUI (it is remembered) or set '
+                           'LSASAF_USERNAME / LSASAF_PASSWORD (register at https://lsa-saf.eumetsat.int).')
+    s = session or requests.Session()
+    auth = (c['username'], c['password'])
+    lo, hi = when - _dt.timedelta(minutes=window_minutes), when + _dt.timedelta(minutes=window_minutes)
+    urls = []
+    for day in sorted({(lo + _dt.timedelta(days=k)).date() for k in range((hi.date() - lo.date()).days + 1)}):
+        base = MTG_FRP_URL.format(d=day)
+        r = s.get(base, auth=auth, timeout=60)
+        r.raise_for_status()
+        for name, stamp in sorted(set(MTG_FRP_NAME.findall(r.text))):
+            t = _dt.datetime.strptime(stamp, '%Y%m%d%H%M')
+            # a slot's file holds the scan that STARTS at its time stamp
+            if lo - _dt.timedelta(minutes=10) <= t <= hi:
+                urls.append(base + name)
+    os.makedirs(cache_dir, exist_ok=True)
+    frames, paths = [], []
+    for url in sorted(set(urls)):
+        out = os.path.join(cache_dir, os.path.basename(url))
+        if not os.path.exists(out):
+            r = s.get(url, auth=auth, timeout=300)
+            if r.status_code == 401:
+                raise RuntimeError('LSA SAF rejected the login (HTTP 401).')
+            r.raise_for_status()
+            if r.content[:2] != b'\x1f\x8b' and url.endswith('.gz'):
+                raise ValueError(f'{os.path.basename(url)}: not a gzip file - the server may have returned a login page')
+            with open(out, 'wb') as fh:
+                fh.write(r.content)
+        paths.append(out)
+        d = load_mtg_frp_csv(out, bbox)
+        if len(d):
+            d = d[(pd.to_datetime(d['datetime_utc']) >= lo) & (pd.to_datetime(d['datetime_utc']) <= hi)]
+        frames.append(d)
+    frames = [f for f in frames if len(f)]
+    return (pd.concat(frames, ignore_index=True) if frames else _empty()), paths
+
+
 def load_partner_file(path, bbox=None):
     """Dispatch a user-supplied product file or directory to its loader."""
     b = os.path.basename(os.path.normpath(path)).upper()
+    if 'MTFRPPIXEL' in b and ('.CSV' in b):
+        return load_mtg_frp_csv(path, bbox)
     if b.endswith('.SEN3') and 'FRP' in b:
         return load_slstr_frp(path, bbox)
     if 'ABI-L2-FDC' in b:
@@ -471,8 +554,8 @@ def load_partner_file(path, bbox=None):
 def enmap_frp_table(df, lat, lon, emissivity=1.0, pixel_area_m2=900.0):
     """Per-pixel EnMAP FRP from this work's results frame: eps sigma T^4 f A
     where the retrieval is usable (fit 'ok', interval not open at both ends),
-    and the model-free saturated lower bound (FRP_min_MW_saturated) where it
-    is not. lat/lon: per-pixel coordinates (aligned with df rows)."""
+    and the model-free saturated lower bound where it is not (the larger of
+    FRP_min_MW_saturated and FRP_min_joint_MW_saturated). lat/lon: per-pixel coordinates (aligned with df rows)."""
     sigma = 5.670374419e-8
     T = df['T_K'].values.astype(float)
     f = df['fire_fraction'].values.astype(float)
@@ -481,10 +564,37 @@ def enmap_frp_table(df, lat, lon, emissivity=1.0, pixel_area_m2=900.0):
            if {'T_lower_unbounded', 'T_upper_unbounded'} <= set(df.columns) else np.zeros(len(df), bool))
     ok = (q == 'ok') & np.isfinite(T) & np.isfinite(f) & ~unc
     frp = np.where(ok, emissivity * sigma * T ** 4 * f * pixel_area_m2 / 1e6, 0.0)
-    lb = df['FRP_min_MW_saturated'].values.astype(float) if 'FRP_min_MW_saturated' in df else np.full(len(df), np.nan)
+    # both saturated-pixel bounds hold for any temperature distribution, so
+    # their maximum does too; the joint (all-band LP) one is the tighter
+    lb = np.full(len(df), np.nan)
+    for c in ('FRP_min_MW_saturated', 'FRP_min_joint_MW_saturated'):
+        if c in df:
+            lb = np.fmax(lb, df[c].values.astype(float))
     bound = np.where(~ok & np.isfinite(lb), lb, 0.0)
     return pd.DataFrame({'lat': lat, 'lon': lon, 'frp_retrieved_MW': frp, 'frp_bound_MW': bound,
                          'retrieved': ok, 'T_K': np.where(ok, T, np.nan)})
+
+
+def overpass_groups(partners, gap_minutes=10.0):
+    """Split detections into overpasses: same source, platform and file, and
+    no gap longer than `gap_minutes` between consecutive scan times. A FIRMS
+    answer is one 'file' holding every pass of a satellite in the window
+    (hours apart), and a product file of a swath sensor is one pass; the gap
+    rule separates the first without splitting the second (a pass over a
+    scene lasts a few minutes, successive passes of one satellite are about
+    100 min apart). Yields ((source, platform, file, pass_index), frame)."""
+    p = partners.copy()
+    t = pd.to_datetime(p['datetime_utc'])
+    p['_t'] = t
+    for (src, plat, f), g in p.groupby(['source', 'platform', 'file'], dropna=False):
+        g = g.sort_values('_t', kind='mergesort')
+        tt = g['_t']
+        if tt.notna().all():
+            k = (tt.diff() > pd.Timedelta(minutes=gap_minutes)).cumsum().values
+        else:
+            k = np.zeros(len(g), int)
+        for i in np.unique(k):
+            yield (src, plat, f, int(i)), g[k == i].drop(columns='_t')
 
 
 def compare_frp(enmap, partners, enmap_time, tolerance_km=1.0):
@@ -501,10 +611,10 @@ def compare_frp(enmap, partners, enmap_time, tolerance_km=1.0):
         return pd.DataFrame(), pd.DataFrame()
     km_lat = 111.32
     rows, pairs = [], []
-    # one row per product file (an overpass or a geostationary slot); swath
-    # products stamp each detection with its own scan time, so the slot time
-    # is the median over the file's detections
-    for (src, plat, _file), g in partners.groupby(['source', 'platform', 'file'], dropna=False):
+    # one row per overpass (or geostationary slot); swath products stamp each
+    # detection with its own scan time, so the slot time is the median over
+    # the overpass's detections
+    for (src, plat, _file, _pass), g in overpass_groups(partners):
         t = pd.Series(pd.to_datetime(g['datetime_utc'])).median() if g['datetime_utc'].notna().any() else None
         t = None if t is None or pd.isna(t) else t.to_pydatetime()
         e_ret = e_lb = 0.0
@@ -592,6 +702,14 @@ def gather_fire_partners(bbox, when, sources=('FIRMS', 'GOES', 'SLSTR'), files=(
                  if paths else 'no slot in the window')
         except Exception as exc:
             note('LSASAF', f'not used: {exc}')
+    if 'MTG' in sources:
+        try:
+            d, paths = fetch_mtg_frp(bbox, when, window_minutes=geo_window_minutes, cache_dir=cache_dir)
+            frames.append(d)
+            note('MTG', f'{len(d)} MTG-FCI detections in {len(paths)} slots within +/-{geo_window_minutes:g} min'
+                 if paths else 'no slot in the window')
+        except Exception as exc:
+            note('MTG', f'not used: {exc}')
     for p in files or ():
         try:
             d = load_partner_file(p, bbox)
